@@ -19,5 +19,17 @@
   "bugs": {
     "url": "https://github.com/juriproject/JuriNodeApp/issues"
   },
-  "homepage": "https://github.com/juriproject/JuriNodeApp#readme"
+  "homepage": "https://github.com/juriproject/JuriNodeApp#readme",
+  "devDependencies": {
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.2.2",
+    "eslint-config-prettier": "^6.1.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "prettier": "^1.18.2"
+  },
+  "dependencies": {
+    "@skalenetwork/filestorage.js": "^0.2.3",
+    "ethereumjs-tx": "^2.1.0",
+    "web3": "^1.2.1"
+  }
 }

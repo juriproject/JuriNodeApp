@@ -18,7 +18,6 @@ const runRound = async ({
   myJuriNodePrivateKey,
   myJuriNodeAddress,
   nodeIndex,
-  timePerStage,
   wasCompliantData,
   failureOptions: {
     isNotRevealing,
@@ -66,7 +65,7 @@ const runRound = async ({
   console.log(`Sent commitments (node ${nodeIndex})!`)
 
   // await sleep(times[timeForCommitmentStage])
-  await waitForNextStage({ from, key, timePerStage, isMovingStage: false })
+  await waitForNextStage()
 
   const finishedAssignedUsersIndexes = await getAssignedUsersIndexes({
     myJuriNodeAddress,
@@ -95,7 +94,7 @@ const runRound = async ({
   }
 
   // await sleep(times[timeForRevealStage])
-  await waitForNextStage({ from, key, timePerStage, isMovingStage: false })
+  await waitForNextStage()
 
   // STAGE 4
   console.log(`Dissenting to invalid answers... (node ${nodeIndex})`)
@@ -112,7 +111,7 @@ const runRound = async ({
   console.log(`Dissented to invalid answers (node ${nodeIndex})!`)
 
   // await sleep(times[timeForDissentStage])
-  await waitForNextStage({ from, key, timePerStage, isMovingStage: false })
+  await waitForNextStage()
 
   const resultsBefore = []
   for (let i = 0; i < uniqUsers.length; i++) {
@@ -152,10 +151,9 @@ const runRound = async ({
       myJuriNodeAddress,
       myJuriNodePrivateKey,
       nodeIndex,
-      timePerStage,
       uniqUsers,
     })
-  else await waitForNextStage({ from, key, timePerStage, isMovingStage: false })
+  else await waitForNextStage()
 
   const resultsAfter = []
   for (let i = 0; i < uniqUsers.length; i++) {
@@ -221,5 +219,21 @@ const safeRunRound = async params => {
     })
   }
 }
+
+safeRunRound({
+  bondingAddress,
+  BondingContract,
+  maxUserCount,
+  myJuriNodePrivateKey: process.env.NODE_INDEX,
+  myJuriNodeAddress: process.env.NODE_INDEX,
+  nodeIndex: process.env.NODE_INDEX,
+  wasCompliantData: [false, false, false, false],
+  failureOptions: {
+    isNotRevealing: false,
+    isSendingIncorrectResult: false,
+    isOffline: false,
+    isSendingIncorrectDissent: false,
+  },
+})
 
 module.exports = safeRunRound

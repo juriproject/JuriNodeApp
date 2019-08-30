@@ -1,0 +1,286 @@
+{
+  "contractName": "SkaleFileStorageInterface",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "storagePath",
+          "type": "string"
+        }
+      ],
+      "name": "getFileStatus",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.10+commit.5a6ea5b1\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"name\":\"storagePath\",\"type\":\"string\"}],\"name\":\"getFileStatus\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/mail/Personal/Juri/JuriStakingContract/contracts/research/lib/SkaleFileStorageInterface.sol\":\"SkaleFileStorageInterface\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/mail/Personal/Juri/JuriStakingContract/contracts/research/lib/SkaleFileStorageInterface.sol\":{\"keccak256\":\"0xd60bd40e07050ebb0424a8ca5da5348434db8b98a93ca18b63db031715da1fe7\",\"urls\":[\"bzzr://4324160dc149cad44efaa27dcfd626d701e81700159101232ee07201ae7e183f\",\"dweb:/ipfs/QmPR2WzJ7vsiYyy4j9kxgQC4S4N9QGacY9QAebn1qzwuHt\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity 0.5.10;\r\n\r\ninterface SkaleFileStorageInterface {\r\n    function getFileStatus(string calldata storagePath) external returns (uint8);\r\n}",
+  "sourcePath": "C:\\Users\\mail\\Personal\\Juri\\JuriStakingContract\\contracts\\research\\lib\\SkaleFileStorageInterface.sol",
+  "ast": {
+    "absolutePath": "/C/Users/mail/Personal/Juri/JuriStakingContract/contracts/research/lib/SkaleFileStorageInterface.sol",
+    "exportedSymbols": {
+      "SkaleFileStorageInterface": [
+        8253
+      ]
+    },
+    "id": 8254,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 8245,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".10"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:17"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 8253,
+        "linearizedBaseContracts": [
+          8253
+        ],
+        "name": "SkaleFileStorageInterface",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8252,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getFileStatus",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8248,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8247,
+                  "name": "storagePath",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8252,
+                  "src": "93:27:17",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 8246,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "93:6:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "92:29:17"
+            },
+            "returnParameters": {
+              "id": 8251,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8250,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8252,
+                  "src": "140:5:17",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 8249,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "140:5:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "139:7:17"
+            },
+            "scope": 8253,
+            "src": "70:77:17",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 8254,
+        "src": "27:123:17"
+      }
+    ],
+    "src": "0:150:17"
+  },
+  "legacyAST": {
+    "absolutePath": "/C/Users/mail/Personal/Juri/JuriStakingContract/contracts/research/lib/SkaleFileStorageInterface.sol",
+    "exportedSymbols": {
+      "SkaleFileStorageInterface": [
+        8253
+      ]
+    },
+    "id": 8254,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 8245,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".10"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:17"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 8253,
+        "linearizedBaseContracts": [
+          8253
+        ],
+        "name": "SkaleFileStorageInterface",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 8252,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getFileStatus",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 8248,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8247,
+                  "name": "storagePath",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8252,
+                  "src": "93:27:17",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 8246,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "93:6:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "92:29:17"
+            },
+            "returnParameters": {
+              "id": 8251,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 8250,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 8252,
+                  "src": "140:5:17",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 8249,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "140:5:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "139:7:17"
+            },
+            "scope": 8253,
+            "src": "70:77:17",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 8254,
+        "src": "27:123:17"
+      }
+    ],
+    "src": "0:150:17"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.10+commit.5a6ea5b1.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2019-08-26T23:35:56.800Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
