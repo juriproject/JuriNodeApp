@@ -1,26 +1,20 @@
 const {
-  account,
-  Ether1e17,
   getBondingAddress,
   getBondingContract,
-  getJuriFeesTokenAddress,
-  getJuriFeesTokenContract,
+  // getJuriFeesTokenAddress,
+  // getJuriFeesTokenContract,
   getJuriTokenAddress,
   getJuriTokenContract,
   networkProxyAddress,
   NetworkProxyContract,
-  nodes,
-  oneEther,
-  privateKey,
-  users,
-  web3,
-} = require('./config')
+} = require('../config/contracts')
 
-const {
-  addUserHeartRateFiles,
-  sendTx,
-  overwriteLog,
-} = require('../helpers/helpers')
+const { Ether1e17, oneEther, web3 } = require('../config/testing')
+
+const { controllerNode, nodes, users } = require('../config/accounts')
+
+const sendTx = require('../helpers/sendTx')
+const overwriteLog = require('../helpers/overwriteLog')
 
 const { BN } = web3.utils
 
@@ -41,7 +35,6 @@ const runInitialSetup = async ({
     const node = nodes[i]
 
     overwriteLog(`Send 0.1 Eth to node ${i}...`)
-
     await sendTx({
       data: 0x0,
       from: originalAccount,
@@ -142,13 +135,13 @@ const runInitialSetup = async ({
 }
 
 const exec = async () => {
-  const originalAccount = account
-  const originalPrivateKey = privateKey
+  const originalAccount = controllerNode.address
+  const originalPrivateKey = controllerNode.privateKeyBuffer
 
   const bondingAddress = await getBondingAddress()
   const BondingContract = await getBondingContract()
-  const juriFeesTokenAdress = await getJuriFeesTokenAddress()
-  const JuriFeesTokenContract = await getJuriFeesTokenContract()
+  // const juriFeesTokenAdress = await getJuriFeesTokenAddress()
+  // const JuriFeesTokenContract = await getJuriFeesTokenContract()
   const juriTokenAddress = await getJuriTokenAddress()
   const JuriTokenContract = await getJuriTokenContract()
 
@@ -166,16 +159,6 @@ const exec = async () => {
     originalPrivateKey,
     web3,
   })
-
-  /* const fileStoragePaths = await addUserHeartRateFiles({
-    NetworkProxyContract,
-    networkProxyAddress,
-    originalAccount,
-    originalPrivateKey,
-    web3,
-  }) */
-
-  // console.log({ fileStoragePaths })
 }
 
 exec()

@@ -10,6 +10,8 @@ const {
 
 const web3 = getWeb3(false)
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 // const web3 = getLocalWeb3()
 // const networkProxyAddress = '0xf204a4Ef082f5c04bB89F7D5E6568B796096735a'
 

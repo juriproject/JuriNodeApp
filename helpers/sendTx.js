@@ -1,4 +1,4 @@
-const Tx = require('ethereumjs-tx')
+const EthereumTx = require('ethereumjs-tx').Transaction
 
 const sendTx = async ({ data, from, nonce, privateKey, value, to, web3 }) => {
   const rawTx = {
@@ -11,7 +11,7 @@ const sendTx = async ({ data, from, nonce, privateKey, value, to, web3 }) => {
     value: value || 0x0,
   }
 
-  const tx = new Tx(rawTx)
+  const tx = new EthereumTx(rawTx)
   tx.sign(privateKey)
 
   const serializedTx = tx.serialize()

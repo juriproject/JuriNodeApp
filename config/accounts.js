@@ -210,4 +210,13 @@ const users = [
   privateKeyBuffer: Buffer.from(account.privateKey.slice(2), 'hex'),
 }))
 
-module.exports = { nodes, users }
+const controllerNode = {
+  address: process.env.CONTROLLER_PUBLIC_KEY,
+  privateKey: process.env.CONTROLLER_PRIVATE_KEY,
+  privateKeyBuffer: Buffer.from(
+    process.env.CONTROLLER_PRIVATE_KEY.slice(2),
+    'hex'
+  ),
+}
+
+module.exports = { controllerNode, nodes, users }

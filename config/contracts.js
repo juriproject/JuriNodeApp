@@ -1,3 +1,5 @@
+const { web3 } = require('./testing')
+
 let bondingAddress, juriTokenAddress, juriFeesTokenAddress
 
 const BondingAbi = require('../contracts/juri/JuriBonding').abi
