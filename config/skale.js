@@ -16,7 +16,9 @@ const Web3 = require('web3')
 const schainEndpointMain =
   'https://rinkeby.infura.io/v3/4744851d37ac46bd95eddf0d50f062a4'
 
-const schainEndpointSide = 'http://localhost:7545'
+const schainEndpointSide =
+  'http://ec2-13-239-37-134.ap-southeast-2.compute.amazonaws.com:7545'
+// const schainEndpointSide = 'http://localhost:7545'
 
 // const schainEndpointSide = 'http://104.248.79.40:8057'
 // const schainID = 'UPPC7EI4'
