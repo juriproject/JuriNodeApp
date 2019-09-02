@@ -1,4 +1,4 @@
-const { NetworkProxyContract } = require('../config')
+const { NetworkProxyContract } = require('../config/contracts')
 
 const getAssignedUsersIndexes = async ({
   myJuriNodeAddress,

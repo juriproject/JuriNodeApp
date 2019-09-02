@@ -1,5 +1,10 @@
-const { networkProxyAddress, NetworkProxyContract, web3 } = require('../config')
-const { sendTx } = require('../helpers')
+const {
+  NetworkProxyContract,
+  networkProxyAddress,
+} = require('../config/contracts')
+const { web3 } = require('../config/testing')
+
+const sendTx = require('../helpers/sendTx')
 
 const retrieveRewards = async ({
   JuriTokenContract,

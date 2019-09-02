@@ -1,5 +1,12 @@
-const { networkProxyAddress, NetworkProxyContract, web3 } = require('../config')
-const { parseRevertMessage, sendTx } = require('../helpers')
+const {
+  NetworkProxyContract,
+  networkProxyAddress,
+} = require('../config/contracts')
+const { web3 } = require('../config/testing')
+
+const parseRevertMessage = require('../helpers/parseRevertMessage')
+const overwriteLog = require('../helpers/overwriteLog')
+const sendTx = require('../helpers/sendTx')
 
 const checkForInvalidAnswers = async ({
   bondingAddress,
@@ -39,7 +46,7 @@ const checkForInvalidAnswers = async ({
 
   if (usersToDissent.length > 0)
     try {
-      console.log(`Sending dissent for users... (node ${nodeIndex})`)
+      overwriteLog(`Sending dissent for users... (node ${nodeIndex})`)
       await sendTx({
         data: NetworkProxyContract.methods
           .dissentToAcceptedAnswers(usersToDissent)
@@ -49,7 +56,13 @@ const checkForInvalidAnswers = async ({
         to: networkProxyAddress,
         web3,
       })
+      overwriteLog(
+        `Sending dissent for users was successful (node ${nodeIndex})!`
+      )
+      process.stdout.write('\n')
     } catch (error) {
+      overwriteLog(`Sending dissent for users failed (node ${nodeIndex})!`)
+      process.stdout.write('\n')
       console.log({
         nodeIndex,
         DissentError: parseRevertMessage(error.message),

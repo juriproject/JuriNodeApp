@@ -4,14 +4,10 @@ const sendReveals = require('./sendReveals')
 
 const runDissentRound = async ({
   dissentedUsers,
-  from,
-  isMovingStage,
   isSendingResults,
-  key,
   myJuriNodeAddress,
   myJuriNodePrivateKey,
   nodeIndex,
-  timePerStage,
   uniqUsers,
   wasCompliantData,
 }) => {
@@ -33,7 +29,7 @@ const runDissentRound = async ({
   }
 
   // await sleep(times[timeForDissentCommitmentStage])
-  await waitForNextStage({ from, key, timePerStage, isMovingStage: false })
+  await waitForNextStage(nodeIndex)
 
   // STAGE 5.2
   if (isSendingResults) {
@@ -57,7 +53,7 @@ const runDissentRound = async ({
   }
 
   // await sleep(times[timeForDissentRevealStage])
-  await waitForNextStage({ from, key, timePerStage, isMovingStage: false })
+  await waitForNextStage(nodeIndex)
 }
 
 module.exports = runDissentRound

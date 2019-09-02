@@ -1,10 +1,10 @@
 const Web3Utils = require('web3-utils')
 
 const {
-  JuriStakingPoolWithOracleMockAbi,
   NetworkProxyContract,
-  web3,
-} = require('../config')
+  JuriStakingPoolWithOracleMockAbi,
+} = require('../config/contracts')
+const { web3 } = require('../config/testing')
 
 const { BN } = web3.utils
 const THRESHOLD = new BN(

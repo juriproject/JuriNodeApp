@@ -1,4 +1,4 @@
-const { NetworkProxyContract } = require('../../config')
+const { NetworkProxyContract } = require('../../config/contracts')
 
 const findAllIncorrectDissentNodes = async ({
   allNodes,

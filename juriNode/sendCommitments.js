@@ -1,13 +1,17 @@
 const crypto = require('crypto')
 const Web3Utils = require('web3-utils')
 
-const { networkProxyAddress, NetworkProxyContract, web3 } = require('../config')
-const { sendTx } = require('../helpers')
+const {
+  NetworkProxyContract,
+  networkProxyAddress,
+} = require('../config/contracts')
+const { web3 } = require('../config/testing')
+
+const sendTx = require('../helpers/sendTx')
 
 const sendCommitments = async ({
   myJuriNodeAddress,
   myJuriNodePrivateKey,
-  // nodeIndex,
   users,
   isDissent,
   wasCompliantData,
@@ -23,6 +27,7 @@ const sendCommitments = async ({
     // TODO
     /* const heartRateData = await downloadHeartRateData(address)
       const wasCompliant = verifyHeartRateData(heartRateData) */
+
     const wasCompliant = wasCompliantData[i]
     const randomNumber = '0x' + crypto.randomBytes(32).toString('hex')
     const commitmentHash = Web3Utils.soliditySha3(wasCompliant, randomNumber)

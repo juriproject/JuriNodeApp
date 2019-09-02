@@ -3,8 +3,11 @@ const findAllOfflineNodes = require('./findAllOfflineNodes')
 const findAllIncorrectResultNodes = require('./findAllIncorrectResultNodes')
 const findAllIncorrectDissentNodes = require('./findAllIncorrectDissentNodes')
 
-const { parseRevertMessage, sendTx } = require('../../helpers')
-const { web3 } = require('../../config')
+const parseRevertMessage = require('../../helpers/parseRevertMessage')
+const overwriteLog = require('../../helpers/overwriteLog')
+const sendTx = require('../../helpers/sendTx')
+
+const { web3 } = require('../../config/testing')
 
 const slashDishonestNodes = async ({
   allNodes,
@@ -56,7 +59,7 @@ const slashDishonestNodes = async ({
   for (let i = 0; i < notRevealedNodes.length; i++) {
     const { toSlash, user } = notRevealedNodes[i]
 
-    console.log(
+    overwriteLog(
       `Slash not revealed [node=${toSlash}] for [user=${user}]... (node ${nodeIndex})`
     )
 
@@ -70,8 +73,12 @@ const slashDishonestNodes = async ({
         to: bondingAddress,
         web3,
       })
-      console.log(`Successfully slashed not revealed (node ${nodeIndex})!`)
+      overwriteLog(`Successfully slashed not revealed (node ${nodeIndex})!`)
+      process.stdout.write('\n')
     } catch (error) {
+      overwriteLog(`Slashing not revealed failed (node ${nodeIndex})!`)
+      process.stdout.write('\n')
+
       console.log(
         `NotRevealSlashError: ${parseRevertMessage(
           error.message
@@ -83,7 +90,7 @@ const slashDishonestNodes = async ({
   for (let i = 0; i < offlineNodes.length; i++) {
     const { toSlash, user } = offlineNodes[i]
 
-    console.log(
+    overwriteLog(
       `Slash offline [node=${toSlash}] for [user=${user}]... (node ${nodeIndex})`
     )
 
@@ -97,8 +104,12 @@ const slashDishonestNodes = async ({
         to: bondingAddress,
         web3,
       })
-      console.log(`Successfully slashed for offline (node ${nodeIndex})!`)
+      overwriteLog(`Successfully slashed for offline (node ${nodeIndex})!`)
+      process.stdout.write('\n')
     } catch (error) {
+      overwriteLog(`Slash offline failed (node ${nodeIndex})!`)
+      process.stdout.write('\n')
+
       console.log(
         `OfflineSlashError: ${parseRevertMessage(
           error.message
@@ -110,7 +121,7 @@ const slashDishonestNodes = async ({
   for (let i = 0; i < incorrectResultNodes.length; i++) {
     const { toSlash, user } = incorrectResultNodes[i]
 
-    console.log(
+    overwriteLog(
       `Slash incorrect result [node=${toSlash}] for [user=${user}]... (node ${nodeIndex})`
     )
 
@@ -124,10 +135,14 @@ const slashDishonestNodes = async ({
         to: bondingAddress,
         web3,
       })
-      console.log(
+      overwriteLog(
         `Successfully slashed for incorrect result (node ${nodeIndex})!`
       )
+      process.stdout.write('\n')
     } catch (error) {
+      overwriteLog(`slashed incorrect result failed (node ${nodeIndex})!`)
+      process.stdout.write('\n')
+
       console.log(
         `IncorrectResultSlashError: ${parseRevertMessage(
           error.message
@@ -139,7 +154,7 @@ const slashDishonestNodes = async ({
   for (let i = 0; i < incorrectDissentNodes.length; i++) {
     const { toSlash, user } = incorrectDissentNodes[i]
 
-    console.log(
+    overwriteLog(
       `Slash incorrect dissent [node=${toSlash}] for [user=${user}]... (node ${nodeIndex})`
     )
 
@@ -153,10 +168,14 @@ const slashDishonestNodes = async ({
         to: bondingAddress,
         web3,
       })
-      console.log(
+      overwriteLog(
         `Succesfully slashed for incorrect dissent (node ${nodeIndex})!`
       )
+      process.stdout.write('\n')
     } catch (error) {
+      overwriteLog(`Slashed incorrect dissent failed (node ${nodeIndex})!`)
+      process.stdout.write('\n')
+
       console.log(
         `IncorrectDissentSlashError: ${parseRevertMessage(
           error.message

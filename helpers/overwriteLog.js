@@ -1,6 +1,11 @@
 const overwriteLog = msg => {
-  process.stdout.clearLine()
-  process.stdout.cursorTo(0)
+  try {
+    process.stdout.clearLine()
+    process.stdout.cursorTo(0)
+  } catch (error) {
+    process.stdout.write('\n')
+  }
+
   process.stdout.write(msg)
 }
 

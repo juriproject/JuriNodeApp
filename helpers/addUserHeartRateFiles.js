@@ -1,12 +1,12 @@
+const { controllerNode, users } = require('../config/accounts')
 const {
-  account,
-  fileStorage,
-  networkProxyAddress,
   NetworkProxyContract,
-  privateKey,
-  users,
-  web3,
-} = require('./config')
+  networkProxyAddress,
+} = require('../config/contracts')
+const { fileStorage, web3 } = require('../config/testing')
+
+const overwriteLog = require('../helpers/overwriteLog')
+const sendTx = require('../helpers/sendTx')
 
 const addUserHeartRateFiles = async maxUserCount => {
   overwriteLog('Moving to users adding heart rate data stage...')
@@ -14,9 +14,9 @@ const addUserHeartRateFiles = async maxUserCount => {
     data: NetworkProxyContract.methods
       .moveToUserAddingHeartRateDataStage()
       .encodeABI(),
-    from: account,
+    from: controllerNode.address,
     to: networkProxyAddress,
-    privateKey,
+    privateKey: controllerNode.privateKeyBuffer,
     web3,
   })
   overwriteLog(`Moved to users adding heart rate data stage!`)
@@ -32,13 +32,13 @@ const addUserHeartRateFiles = async maxUserCount => {
     const fileName = `userHeartrateDataTest-${Date.now()}`
     const fileBuffer = Buffer.from(`Hello World-${i}`)
 
-    const storedFilePath = await fileStorage.uploadFile(
+    /* const storedFilePath = await fileStorage.uploadFile(
       user.address,
       fileName,
       fileBuffer,
       user.privateKey
-    )
-    // const storedFilePath = `${user.address.slice(2)}\\${fileName}`
+    ) */
+    const storedFilePath = `${user.address.slice(2)}\\${fileName}`
 
     const modifiedFilePath = storedFilePath.replace('\\', '/')
     fileStoragePaths.push(modifiedFilePath)

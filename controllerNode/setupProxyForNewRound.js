@@ -1,20 +1,23 @@
-const moveToNextStage = require('./moveToNextStage')
 const {
-  account,
   NetworkProxyContract,
   networkProxyAddress,
-  privateKey,
-  web3,
-} = require('../config')
-const { addUserHeartRateFiles, overwriteLog, sendTx } = require('../helpers')
+} = require('../config/contracts')
+const { web3 } = require('../config/testing')
+const { controllerNode } = require('../config/accounts')
+
+const addUserHeartRateFiles = require('../helpers/addUserHeartRateFiles')
+const overwriteLog = require('../helpers/overwriteLog')
+const sendTx = require('../helpers/sendTx')
+
+const moveToNextStage = require('./moveToNextStage')
 
 const setupProxyForNewRound = async userCount => {
   overwriteLog('Increase round index...')
   await sendTx({
     data: NetworkProxyContract.methods.debugIncreaseRoundIndex().encodeABI(),
-    from: account,
+    from: controllerNode.address,
     to: networkProxyAddress,
-    privateKey,
+    privateKey: controllerNode.privateKeyBuffer,
     web3,
   })
   overwriteLog('Increased round index!')
@@ -26,7 +29,10 @@ const setupProxyForNewRound = async userCount => {
 
   overwriteLog('Moving to nodes adding commitments stage...')
   while (currentStage.toString() !== '1') {
-    await moveToNextStage({ from: account, key: privateKey })
+    await moveToNextStage({
+      from: controllerNode.address,
+      key: controllerNode.privateKeyBuffer,
+    })
     currentStage = await NetworkProxyContract.methods.currentStage().call()
   }
   overwriteLog('Moved to nodes adding commitments stage!')
