@@ -28,8 +28,8 @@
     "prettier": "^1.18.2"
   },
   "dependencies": {
-    "@skalenetwork/filestorage.js": "^0.2.3",
     "ethereumjs-tx": "^2.1.0",
+    "juriproject-skale-filestorage": "0.0.1",
     "web3": "^1.2.1"
   }
 }

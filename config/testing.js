@@ -1,5 +1,5 @@
-const Filestorage = require('@skalenetwork/filestorage.js/src/index')
-const FilestorageContract = require('@skalenetwork/filestorage.js/src/FilestorageContract')
+const Filestorage = require('juriproject-skale-filestorage/src/index')
+const FilestorageContract = require('juriproject-skale-filestorage/src/FilestorageContract')
 
 const { getWeb3, getWeb3Provider, privateKey } = require('./skale')
 
