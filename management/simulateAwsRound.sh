@@ -9,23 +9,23 @@ USER_COUNT=$4
 NODE_COUNT=$5
 
 CONTROLLER_LOG_FILE=logs/controllerNode.log
-rm $CONTROLLER_LOG_FILE
-
 NODE_LOG_FILES=()
-for i in {1..20}
+
+FIRST_NODE_INDEX=1
+ 
+for (( i=$FIRST_NODE_INDEX; i<=$NODE_COUNT; i++ ))
 do
-    NODE_LOG_FILES+=("logs/node${i}.log")
-    rm "logs/node${i}.log"
+	NODE_LOG_FILES+=("logs/node${i}.log") 
 done
 
-CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY node controllerNode/setupProxyForNewRound.js
-CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY TIME_PER_STAGE=$TIME_PER_STAGE node controllerNode >> $CONTROLLER_LOG_FILE &
+rm logs/*
 
-ssh -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}"
+ssh -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY node JuriNodeApp/controllerNode/setupProxyForNewRound.js"
+ssh -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY TIME_PER_STAGE=$TIME_PER_STAGE node JuriNodeApp/controllerNode/" >> $CONTROLLER_LOG_FILE &
 
-for ((index=0; index<${#NODE_LOG_FILES[@]}; ++index)); do
-    ssh -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}"
-    NODE_INDEX=$index TIME_PER_STAGE=$TIME_PER_STAGE USER_COUNT=$USER_COUNT node juriNode/ >> "${NODE_LOG_FILES[index]}" &
+for ((index=1; index-1<${#NODE_LOG_FILES[@]}; ++index)); do
+    HOST="NODE$index"
+    ssh -i "../JuriNodes.pem" "ubuntu@${!HOST}" "NODE_INDEX=$index TIME_PER_STAGE=$TIME_PER_STAGE USER_COUNT=$USER_COUNT node JuriNodeApp/juriNode/" >> "${NODE_LOG_FILES[index-1]}" &
 done
 
 tail -f "${NODE_LOG_FILES[0]}"
