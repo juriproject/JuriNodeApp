@@ -16,10 +16,25 @@ const allInstancesWithName = data.Reservations.map(item =>
   .filter(({ PublicDnsName }) => PublicDnsName !== '')
 
 let fileData = ''
+let awsControllerUrl
 
 allInstancesWithName.forEach(({ Name, PublicDnsName }) => {
   fileData += `${Name}=${PublicDnsName}\n`
+
+  if (Name === 'CONTROLLER_NODE') awsControllerUrl = PublicDnsName
 })
+
+fs.writeFile(
+  './awsControllerUrl.js',
+  `module.exports = '${awsControllerUrl}'\n`,
+  err => {
+    if (err) {
+      return console.log(err)
+    }
+
+    console.log('Saved awsControllerUrl successfully!')
+  }
+)
 
 fs.writeFile('./awsDnsNames.env', fileData, err => {
   if (err) {

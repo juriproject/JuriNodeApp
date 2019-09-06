@@ -12,12 +12,13 @@ SKALE Private Net Endpoint 2: http://165.22.133.157:10101
 const Tx = require('ethereumjs-tx')
 const Web3 = require('web3')
 
+const awsControllerUrl = require('../management/awsControllerUrl')
+
 // const schainEndpointMain = 'http://134.209.56.46:1919'
 const schainEndpointMain =
   'https://rinkeby.infura.io/v3/4744851d37ac46bd95eddf0d50f062a4'
 
-const schainEndpointSide =
-  'http://ec2-13-239-37-134.ap-southeast-2.compute.amazonaws.com:7545'
+const schainEndpointSide = `http://${awsControllerUrl}:7545`
 // const schainEndpointSide = 'http://localhost:7545'
 
 // const schainEndpointSide = 'http://104.248.79.40:8057'
