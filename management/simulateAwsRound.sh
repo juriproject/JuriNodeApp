@@ -20,12 +20,13 @@ done
 
 rm logs/*
 
-ssh -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY node JuriNodeApp/controllerNode/setupProxyForNewRound.js"
-ssh -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY TIME_PER_STAGE=$TIME_PER_STAGE node JuriNodeApp/controllerNode/" >> $CONTROLLER_LOG_FILE &
+ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "cd JuriNodeApp && git pull"
+ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY node JuriNodeApp/controllerNode/setupProxyForNewRound.js"
+ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY TIME_PER_STAGE=$TIME_PER_STAGE node JuriNodeApp/controllerNode/" >> $CONTROLLER_LOG_FILE &
 
 for ((index=1; index-1<${#NODE_LOG_FILES[@]}; ++index)); do
     HOST="NODE$index"
-    ssh -i "../JuriNodes.pem" "ubuntu@${!HOST}" "NODE_INDEX=$index TIME_PER_STAGE=$TIME_PER_STAGE USER_COUNT=$USER_COUNT node JuriNodeApp/juriNode/" >> "${NODE_LOG_FILES[index-1]}" &
+    ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${!HOST}" "NODE_INDEX=$index TIME_PER_STAGE=$TIME_PER_STAGE USER_COUNT=$USER_COUNT node JuriNodeApp/juriNode/" >> "${NODE_LOG_FILES[index-1]}" &
 done
 
 tail -f "${NODE_LOG_FILES[0]}"
