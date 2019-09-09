@@ -65,7 +65,7 @@ for ((index=1; index-1<${#NODE_LOG_FILES[@]}; ++index)); do
         IS_SENDING_INCORRECT_DISSENT="true"
     fi
 
-    ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${!HOST}" "NODE_INDEX=$NODE_INDEX TIME_PER_STAGE=$TIME_PER_STAGE USER_COUNT=$USER_COUNT node JuriNodeApp/juriNode/ false false false false" >> "${NODE_LOG_FILES[index-1]}" &
+    ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${!HOST}" "NODE_INDEX=$NODE_INDEX TIME_PER_STAGE=$TIME_PER_STAGE USER_COUNT=$USER_COUNT node JuriNodeApp/juriNode/ $IS_NOT_REVEALING $IS_SENDING_INCORRECT_RESULT $IS_OFFLINE $IS_SENDING_INCORRECT_DISSENT" >> "${NODE_LOG_FILES[index-1]}" &
 done
 
 tail -f "${NODE_LOG_FILES[0]}"

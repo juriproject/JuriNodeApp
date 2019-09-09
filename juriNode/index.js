@@ -33,6 +33,16 @@ const runRound = async ({
     isSendingIncorrectDissent,
   },
 }) => {
+  console.log('Starting round with mode: ', {
+    failureOptions: {
+      isNotRevealing,
+      isSendingIncorrectResult,
+      isOffline,
+      isSendingIncorrectDissent,
+    },
+    nodeIndex,
+  })
+
   const bondingAddress = await getBondingAddress()
   const BondingContract = await getBondingContract()
 
