@@ -7,7 +7,7 @@ CONTROLLER_PRIVATE_KEY=$2
 
 echo 'Updating repos...'
 ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "cd JuriNodeApp && git pull"
-for ((index=1; index-1<${#NODE_LOG_FILES[@]}; ++index)); do
+for ((index=1; index-1<20; ++index)); do
     HOST="NODE$index"
     ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${!HOST}" "cd JuriNodeApp && git pull"
 done

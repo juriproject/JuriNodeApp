@@ -238,10 +238,10 @@ safeRunRound({
   nodeIndex: parseInt(process.env.NODE_INDEX),
   wasCompliantData: new Array(parseInt(process.env.USER_COUNT)).fill(false),
   failureOptions: {
-    isNotRevealing: false,
-    isSendingIncorrectResult: false,
-    isOffline: false,
-    isSendingIncorrectDissent: false,
+    isNotRevealing: process.argv[2] === 'true',
+    isSendingIncorrectResult: process.argv[3] === 'true',
+    isOffline: process.argv[4] === 'true',
+    isSendingIncorrectDissent: process.argv[5] === 'true',
   },
 })
 
