@@ -51,6 +51,17 @@ const getJuriFeesTokenAddress = async () => {
 const getJuriFeesTokenContract = async () =>
   new web3.eth.Contract(ERC20MintableAbi, await getJuriFeesTokenAddress())
 
+const getJuriStakingPoolContracts = async () => {
+  const poolAddresses = await NetworkProxyContract.methods
+    .getRegisteredJuriStakingPools()
+    .call()
+
+  return poolAddresses.map(
+    poolAddress =>
+      new web3.eth.Contract(JuriStakingPoolWithOracleMockAbi, poolAddress)
+  )
+}
+
 module.exports = {
   getBondingAddress,
   getBondingContract,
@@ -58,6 +69,7 @@ module.exports = {
   getJuriFeesTokenContract,
   getJuriTokenAddress,
   getJuriTokenContract,
+  getJuriStakingPoolContracts,
   JuriStakingPoolWithOracleMockAbi,
   networkProxyAddress,
   NetworkProxyContract,

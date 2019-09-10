@@ -13,12 +13,22 @@ const retrieveRewards = async ({
   myJuriNodePrivateKey,
   roundIndex,
 }) => {
-  await sendTx({
+  /* await sendTx({
     data: JuriTokenContract.methods.retrieveRoundInflationRewards().encodeABI(),
     from: myJuriNodeAddress,
     privateKey: myJuriNodePrivateKey,
     to: juriTokenAddress,
     web3,
+  }) */
+
+  console.log({
+    roundIndex: roundIndex.toString(),
+    totalJuriFeesInProxyBefore: (await NetworkProxyContract.methods
+      .totalJuriFees(roundIndex)
+      .call()).toString(),
+    totalJuriFeesAtWithdrawalTimesBefore: (await NetworkProxyContract.methods
+      .totalJuriFeesAtWithdrawalTimes(roundIndex, myJuriNodeAddress)
+      .call()).toString(),
   })
 
   await sendTx({
@@ -29,6 +39,16 @@ const retrieveRewards = async ({
     privateKey: myJuriNodePrivateKey,
     to: networkProxyAddress,
     web3,
+  })
+
+  console.log({
+    roundIndex: roundIndex.toString(),
+    totalJuriFeesInProxyAfter: (await NetworkProxyContract.methods
+      .totalJuriFees(roundIndex)
+      .call()).toString(),
+    totalJuriFeesAtWithdrawalTimesAfter: (await NetworkProxyContract.methods
+      .totalJuriFeesAtWithdrawalTimes(roundIndex, myJuriNodeAddress)
+      .call()).toString(),
   })
 }
 

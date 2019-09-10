@@ -1,6 +1,9 @@
 const {
   getBondingAddress,
   getBondingContract,
+  getJuriTokenAddress,
+  getJuriTokenContract,
+  getJuriFeesTokenContract,
   NetworkProxyContract,
 } = require('../config/contracts')
 const { ZERO_ADDRESS } = require('../config/testing')
@@ -14,6 +17,7 @@ const parseRevertMessage = require('../helpers/parseRevertMessage')
 const checkForInvalidAnswers = require('./checkForInvalidAnswers')
 const getAssignedUsersIndexes = require('./getAssignedUsersIndexes')
 const retrieveAssignedUsers = require('./retrieveAssignedUsers')
+const retrieveRewards = require('./retrieveRewards')
 const runDissentRound = require('./runDissentRound')
 const sendCommitments = require('./sendCommitments')
 const sendReveals = require('./sendReveals')
@@ -45,6 +49,9 @@ const runRound = async ({
 
   const bondingAddress = await getBondingAddress()
   const BondingContract = await getBondingContract()
+  const juriTokenAddress = await getJuriTokenAddress()
+  const JuriTokenContract = await getJuriTokenContract()
+  const JuriFeesTokenContract = await getJuriFeesTokenContract()
 
   const complianceData = isSendingIncorrectResult
     ? wasCompliantData.map(wasCompliant => !wasCompliant)
@@ -200,15 +207,23 @@ const runRound = async ({
   overwriteLog(`Dishonest nodes slashed (node ${nodeIndex})!`)
   process.stdout.write('\n')
 
+  await waitForNextStage(nodeIndex)
+
   // FINISH UP
-  /* const balanceJuriTokenBefore = (await JuriTokenContract.methods
+  const balanceJuriTokenBefore = (await JuriTokenContract.methods
     .balanceOf(myJuriNodeAddress)
     .call()).toString()
   const balanceJuriFeesTokenBefore = (await JuriFeesTokenContract.methods
     .balanceOf(myJuriNodeAddress)
     .call()).toString()
 
-  await retrieveRewards({ JuriTokenContract, juriTokenAddress, roundIndex })
+  await retrieveRewards({
+    JuriTokenContract,
+    juriTokenAddress,
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
+    roundIndex,
+  })
 
   const balanceJuriTokenAfter = (await JuriTokenContract.methods
     .balanceOf(myJuriNodeAddress)
@@ -217,8 +232,12 @@ const runRound = async ({
     .balanceOf(myJuriNodeAddress)
     .call()).toString()
 
-  console.log({ balanceJuriTokenBefore, balanceJuriTokenAfter })
-  console.log({ balanceJuriFeesTokenBefore, balanceJuriFeesTokenAfter }) */
+  console.log({ balanceJuriTokenBefore, balanceJuriTokenAfter, nodeIndex })
+  console.log({
+    balanceJuriFeesTokenBefore,
+    balanceJuriFeesTokenAfter,
+    nodeIndex,
+  })
 
   // await sleep(times[timeForSlashingStage])
 
