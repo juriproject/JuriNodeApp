@@ -9,7 +9,7 @@ const { web3 } = require('../config/testing')
 const { BN } = web3.utils
 const THRESHOLD = new BN(
   '115792089237316195423570985008687907853269984665640564039457584007913129639936'
-)
+) // TODO
 
 const retrieveAssignedUsers = async ({
   maxUserCount,

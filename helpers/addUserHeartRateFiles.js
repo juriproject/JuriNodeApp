@@ -30,15 +30,15 @@ const addUserHeartRateFiles = async maxUserCount => {
 
     const user = users[i]
     const fileName = `userHeartrateDataTest-${Date.now()}`
-    const fileBuffer = Buffer.from(`Hello World-${i}`)
+    const fileBuffer = Buffer.from((Math.random() > 0.5).toString()) // TODO
 
-    /* const storedFilePath = await fileStorage.uploadFile(
+    const storedFilePath = await fileStorage.uploadFile(
       user.address,
       fileName,
       fileBuffer,
       user.privateKey
-    ) */
-    const storedFilePath = `${user.address.slice(2)}\\${fileName}`
+    )
+    // const storedFilePath = `${user.address.slice(2)}\\${fileName}`
 
     const modifiedFilePath = storedFilePath.replace('\\', '/')
     fileStoragePaths.push(modifiedFilePath)

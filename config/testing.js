@@ -1,7 +1,10 @@
-const Filestorage = require('juriproject-skale-filestorage/src/index')
-const FilestorageContract = require('juriproject-skale-filestorage/src/FilestorageContract')
+// const Filestorage = require('juriproject-skale-filestorage/src/index')
+// const FilestorageContract = require('juriproject-skale-filestorage/src/FilestorageContract')
 
-const { getWeb3, getWeb3Provider, privateKey } = require('./skale')
+const Filestorage = require('@skalenetwork/filestorage.js/src/index')
+const FilestorageContract = require('@skalenetwork/filestorage.js/src/FilestorageContract')
+
+const { getWeb3, getWeb3Provider } = require('./skale')
 
 const web3 = getWeb3(false)
 
@@ -20,7 +23,6 @@ module.exports = {
   fileStorage,
   FilestorageContract,
   oneEther,
-  privateKey,
   web3,
   ZERO_ADDRESS,
 }

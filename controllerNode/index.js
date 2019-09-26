@@ -15,7 +15,7 @@ const moveToNextStage = require('./moveToNextStage')
 const runControllerRound = async () => {
   const roundIndex = await NetworkProxyContract.methods.roundIndex().call()
 
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 5; i++) {
     await sleep(parseInt(process.env.TIME_PER_STAGE) + 200)
 
     overwriteLog('Moving stage...')
@@ -32,8 +32,11 @@ const runControllerRound = async () => {
   const JuriStakingPoolContracts = await getJuriStakingPoolContracts()
   const JuriTokenFeesContract = await getJuriFeesTokenContract()
 
+  const roundIndex2 = await NetworkProxyContract.methods.roundIndex().call()
+
   console.log({
     roundIndex: roundIndex.toString(),
+    roundIndex2: roundIndex2.toString(),
     totalJuriFeesInProxyBefore: (await NetworkProxyContract.methods
       .totalJuriFees(roundIndex)
       .call()).toString(),
@@ -88,17 +91,21 @@ const runControllerRound = async () => {
     overwriteLog(`Handled JuriFees in pool ${i}!`)
     process.stdout.write('\n')
 
-    overwriteLog('Moving stage...')
+    /* overwriteLog('Moving stage...')
     await moveToNextStage({
       from: controllerNode.address,
       key: controllerNode.privateKeyBuffer,
     })
     overwriteLog('Moved stage!')
-    process.stdout.write('\n')
+    process.stdout.write('\n') */
   }
+
+  const roundIndex3 = await NetworkProxyContract.methods.roundIndex().call()
 
   console.log({
     roundIndex: roundIndex.toString(),
+    roundIndex2: roundIndex2.toString(),
+    roundIndex3: roundIndex3.toString(),
     totalJuriFeesInProxyAfter: (await NetworkProxyContract.methods
       .totalJuriFees(roundIndex)
       .call()).toString(),

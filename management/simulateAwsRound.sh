@@ -29,7 +29,7 @@ for ((index=1; index-1<${#NODE_LOG_FILES[@]}; ++index)); do
 done
 echo 'Updating repos finished!'
 
-ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY node JuriNodeApp/controllerNode/setupProxyForNewRound.js"
+ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY MAX_USER_COUNT=$USER_COUNT node JuriNodeApp/controllerNode/setupProxyForNewRound.js"
 ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY TIME_PER_STAGE=$TIME_PER_STAGE node JuriNodeApp/controllerNode/" >> $CONTROLLER_LOG_FILE &
 
 NOT_REVEAL_NODE_INDEX=5

@@ -16,12 +16,14 @@ const parseRevertMessage = require('../helpers/parseRevertMessage')
 
 const checkForInvalidAnswers = require('./checkForInvalidAnswers')
 const getAssignedUsersIndexes = require('./getAssignedUsersIndexes')
+const moveToNextRound = require('./moveToNextRound')
 const retrieveAssignedUsers = require('./retrieveAssignedUsers')
 const retrieveRewards = require('./retrieveRewards')
 const runDissentRound = require('./runDissentRound')
 const sendCommitments = require('./sendCommitments')
 const sendReveals = require('./sendReveals')
 const slashDishonestNodes = require('./slashing')
+const verifyHeartRateData = require('./verifyHeartRateData')
 const waitForNextStage = require('./waitForNextStage')
 
 const runRound = async ({
@@ -29,7 +31,6 @@ const runRound = async ({
   myJuriNodePrivateKey,
   myJuriNodeAddress,
   nodeIndex,
-  wasCompliantData,
   failureOptions: {
     isNotRevealing,
     isSendingIncorrectResult,
@@ -53,10 +54,6 @@ const runRound = async ({
   const JuriTokenContract = await getJuriTokenContract()
   const JuriFeesTokenContract = await getJuriFeesTokenContract()
 
-  const complianceData = isSendingIncorrectResult
-    ? wasCompliantData.map(wasCompliant => !wasCompliant)
-    : wasCompliantData
-
   /* console.log({
     nodeIndex,
     bondedStake: (await BondingContract.methods
@@ -67,7 +64,6 @@ const runRound = async ({
   // SETUP
   const roundIndex = await NetworkProxyContract.methods.roundIndex().call()
   const allNodes = await BondingContract.methods.getAllStakingNodes().call()
-  // const times = await fetchStageTimes()
 
   // STAGE 2
   const { assignedUsers, uniqUsers } = await retrieveAssignedUsers({
@@ -75,6 +71,14 @@ const runRound = async ({
     myJuriNodeAddress,
     roundIndex,
   })
+
+  const wasCompliantData = await verifyHeartRateData({
+    assignedUsers,
+    roundIndex,
+  })
+  const complianceData = isSendingIncorrectResult
+    ? wasCompliantData.map(({ wasCompliant }) => !wasCompliant)
+    : wasCompliantData.map(({ wasCompliant }) => wasCompliant)
 
   // STAGE 3
   overwriteLog(`Sending commitments... (node ${nodeIndex})`)
@@ -89,7 +93,6 @@ const runRound = async ({
   overwriteLog(`Sent commitments (node ${nodeIndex})!`)
   process.stdout.write('\n')
 
-  // await sleep(times[timeForCommitmentStage])
   await waitForNextStage(nodeIndex)
 
   const finishedAssignedUsersIndexes = await getAssignedUsersIndexes({
@@ -119,7 +122,6 @@ const runRound = async ({
   }
   process.stdout.write('\n')
 
-  // await sleep(times[timeForRevealStage])
   await waitForNextStage(nodeIndex)
 
   // STAGE 4
@@ -137,7 +139,6 @@ const runRound = async ({
   overwriteLog(`Dissented to invalid answers (node ${nodeIndex})!`)
   process.stdout.write('\n')
 
-  // await sleep(times[timeForDissentStage])
   await waitForNextStage(nodeIndex)
 
   const resultsBefore = []
@@ -161,12 +162,6 @@ const runRound = async ({
         .getUserComplianceDataCommitment(roundIndex, myJuriNodeAddress, user)
         .call()) === ZERO_ADDRESS
   )
-
-  /* console.log({
-    nodeIndex,
-    allDissentedUsers,
-    dissentedUsers,
-  }) */
 
   if (allDissentedUsers.length > 0)
     await runDissentRound({
@@ -207,7 +202,12 @@ const runRound = async ({
   overwriteLog(`Dishonest nodes slashed (node ${nodeIndex})!`)
   process.stdout.write('\n')
 
-  await waitForNextStage(nodeIndex)
+  // STAGE 7
+  await moveToNextRound({
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
+    nodeIndex,
+  })
 
   // FINISH UP
   const balanceJuriTokenBefore = (await JuriTokenContract.methods
@@ -239,10 +239,9 @@ const runRound = async ({
     nodeIndex,
   })
 
-  // await sleep(times[timeForSlashingStage])
+  // TODO sleep + retrieve newly minted tokens from main
 
-  // STAGE 7
-  // await moveToNextRound()
+  // await sleep(times[timeForSlashingStage])
 }
 
 const safeRunRound = async params => {
@@ -259,19 +258,26 @@ const safeRunRound = async params => {
   }
 }
 
-safeRunRound({
-  maxUserCount: parseInt(process.env.USER_COUNT),
-  myJuriNodePrivateKey:
-    nodes[parseInt(process.env.NODE_INDEX)].privateKeyBuffer,
-  myJuriNodeAddress: nodes[parseInt(process.env.NODE_INDEX)].address,
-  nodeIndex: parseInt(process.env.NODE_INDEX),
-  wasCompliantData: new Array(parseInt(process.env.USER_COUNT)).fill(false),
-  failureOptions: {
-    isNotRevealing: process.argv[2] === 'true',
-    isSendingIncorrectResult: process.argv[3] === 'true',
-    isOffline: process.argv[4] === 'true',
-    isSendingIncorrectDissent: process.argv[5] === 'true',
-  },
-})
+const exec = async () => {
+  const maxUserCount = parseInt(process.env.USER_COUNT)
+  const nodeIndex = parseInt(process.env.NODE_INDEX)
+
+  const { address, privateKeyBuffer } = nodes[nodeIndex]
+
+  await safeRunRound({
+    maxUserCount,
+    myJuriNodePrivateKey: privateKeyBuffer,
+    myJuriNodeAddress: address,
+    nodeIndex,
+    failureOptions: {
+      isNotRevealing: process.argv[2] === 'true',
+      isSendingIncorrectResult: process.argv[3] === 'true',
+      isOffline: process.argv[4] === 'true',
+      isSendingIncorrectDissent: process.argv[5] === 'true',
+    },
+  })
+}
+
+exec()
 
 module.exports = safeRunRound

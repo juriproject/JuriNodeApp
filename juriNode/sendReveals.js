@@ -6,7 +6,7 @@ const { web3 } = require('../config/testing')
 
 const sendTx = require('../helpers/sendTx')
 
-const sendReveals = async ({
+const sendReveals = ({
   users,
   randomNumbers,
   wasCompliantData,

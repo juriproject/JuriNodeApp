@@ -39,6 +39,6 @@ const setupProxyForNewRound = async userCount => {
   process.stdout.write('\n')
 }
 
-setupProxyForNewRound()
+setupProxyForNewRound(process.env.MAX_USER_COUNT)
 
 module.exports = setupProxyForNewRound
