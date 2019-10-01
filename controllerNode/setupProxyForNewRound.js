@@ -1,44 +1,57 @@
 const {
-  NetworkProxyContract,
+  getNetworkProxyContract,
   networkProxyAddress,
 } = require('../config/contracts')
-const { web3 } = require('../config/testing')
-const { controllerNode } = require('../config/accounts')
+const { getWeb3 } = require('../config/skale')
 
-const addUserHeartRateFiles = require('../helpers/addUserHeartRateFiles')
+const addUserHeartRateFiles = require('./addUserHeartRateFiles')
 const overwriteLog = require('../helpers/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
 
-const moveToNextStage = require('./moveToNextStage')
+const setupProxyForNewRound = async ({
+  controllerAddress,
+  controllerKeyBuffer,
+  isUploadingFiles,
+  maxUserCount,
+}) => {
+  const NetworkProxyContract = getNetworkProxyContract()
+  const web3 = getWeb3(false)
 
-const setupProxyForNewRound = async userCount => {
   overwriteLog('Increase round index...')
   await sendTx({
     data: NetworkProxyContract.methods.debugIncreaseRoundIndex().encodeABI(),
-    from: controllerNode.address,
+    from: controllerAddress,
     to: networkProxyAddress,
-    privateKey: controllerNode.privateKeyBuffer,
+    privateKey: controllerKeyBuffer,
     web3,
   })
-  overwriteLog('Increased round index!')
-  process.stdout.write('\n')
+  overwriteLogEnd('Increased round index!')
 
-  await addUserHeartRateFiles(userCount)
-
-  let currentStage = await NetworkProxyContract.methods.currentStage().call()
+  await addUserHeartRateFiles({
+    controllerAddress,
+    controllerKeyBuffer,
+    isUploadingFiles,
+    maxUserCount,
+  })
 
   overwriteLog('Moving to nodes adding commitments stage...')
-  while (currentStage.toString() !== '1') {
-    await moveToNextStage({
-      from: controllerNode.address,
-      key: controllerNode.privateKeyBuffer,
-    })
-    currentStage = await NetworkProxyContract.methods.currentStage().call()
-  }
-  overwriteLog('Moved to nodes adding commitments stage!')
-  process.stdout.write('\n')
+  await sendTx({
+    data: NetworkProxyContract.methods
+      .moveToAddingCommitmentStage()
+      .encodeABI(),
+    from: controllerAddress,
+    privateKey: controllerKeyBuffer,
+    to: networkProxyAddress,
+    web3,
+  })
+
+  overwriteLogEnd('Moved to nodes adding commitments stage!')
 }
 
-setupProxyForNewRound(process.env.MAX_USER_COUNT)
+/* setupProxyForNewRound({
+  isUploadingFiles: process.env.IS_UPLOADING_FILES === 'true',
+  maxUserCount: process.env.MAX_USER_COUNT,
+}) */
 
 module.exports = setupProxyForNewRound

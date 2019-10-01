@@ -1,13 +1,16 @@
 const {
-  NetworkProxyContract,
+  getNetworkProxyContract,
   networkProxyAddress,
 } = require('../config/contracts')
-const { web3 } = require('../config/testing')
+const { getWeb3 } = require('../config/skale')
 const sendTx = require('../helpers/sendTx')
 
 const moveToNextStage = async ({ from, key }) => {
+  const web3 = getWeb3(false)
+  const NetworkProxyContract = getNetworkProxyContract()
+
   await sendTx({
-    data: NetworkProxyContract.methods.moveToNextStage().encodeABI(),
+    data: NetworkProxyContract.methods.moveTimeToNextStage().encodeABI(),
     from,
     to: networkProxyAddress,
     privateKey: key,

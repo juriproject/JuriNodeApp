@@ -1,44 +1,56 @@
-const { controllerNode, users } = require('../config/accounts')
+const { users } = require('../config/accounts')
 const {
-  NetworkProxyContract,
+  getNetworkProxyContract,
   networkProxyAddress,
 } = require('../config/contracts')
-const { fileStorage, web3 } = require('../config/testing')
+const { getFilestorage } = require('../config/testing')
+
+const { getWeb3 } = require('../config/skale')
 
 const overwriteLog = require('../helpers/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
 
-const addUserHeartRateFiles = async maxUserCount => {
-  overwriteLog('Moving to users adding heart rate data stage...')
+const addUserHeartRateFiles = async ({
+  controllerAddress,
+  controllerKeyBuffer,
+  isUploadingFiles,
+  maxUserCount,
+  parentPort,
+}) => {
+  const web3 = getWeb3(false)
+  const NetworkProxyContract = getNetworkProxyContract()
+
+  overwriteLog('Moving to users adding heart rate data stage...', parentPort)
   await sendTx({
     data: NetworkProxyContract.methods
       .moveToUserAddingHeartRateDataStage()
       .encodeABI(),
-    from: controllerNode.address,
+    from: controllerAddress,
     to: networkProxyAddress,
-    privateKey: controllerNode.privateKeyBuffer,
+    privateKey: controllerKeyBuffer,
     web3,
   })
-  overwriteLog(`Moved to users adding heart rate data stage!`)
-  process.stdout.write('\n')
+  overwriteLogEnd(`Moved to users adding heart rate data stage!`, parentPort)
 
   const fileStoragePaths = []
   const userCount = maxUserCount || users.length
 
   for (let i = 0; i < userCount; i++) {
-    overwriteLog(`Upload heart rate file for user ${i}...`)
+    overwriteLog(`Upload heart rate file for user ${i}...`, parentPort)
 
     const user = users[i]
     const fileName = `userHeartrateDataTest-${Date.now()}`
     const fileBuffer = Buffer.from((Math.random() > 0.5).toString()) // TODO
 
-    const storedFilePath = await fileStorage.uploadFile(
-      user.address,
-      fileName,
-      fileBuffer,
-      user.privateKey
-    )
-    // const storedFilePath = `${user.address.slice(2)}\\${fileName}`
+    const storedFilePath = isUploadingFiles
+      ? await getFilestorage().uploadFile(
+          user.address,
+          fileName,
+          fileBuffer,
+          user.privateKey
+        )
+      : `${user.address.slice(2)}\\${fileName}`
 
     const modifiedFilePath = storedFilePath.replace('\\', '/')
     fileStoragePaths.push(modifiedFilePath)
@@ -65,8 +77,7 @@ const addUserHeartRateFiles = async maxUserCount => {
     })
   }
 
-  overwriteLog(`Heart rate files uploaded!`)
-  process.stdout.write('\n')
+  overwriteLogEnd(`Heart rate files uploaded!`, parentPort)
 
   return fileStoragePaths
 }

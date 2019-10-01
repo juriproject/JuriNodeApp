@@ -1,8 +1,4 @@
-const {
-  NetworkProxyContract,
-  networkProxyAddress,
-} = require('../config/contracts')
-const { web3 } = require('../config/testing')
+const { networkProxyAddress } = require('../config/contracts')
 
 const parseRevertMessage = require('../helpers/parseRevertMessage')
 const overwriteLog = require('../helpers/overwriteLog')
@@ -16,7 +12,9 @@ const checkForInvalidAnswers = async ({
   wasCompliantData,
   myJuriNodeAddress,
   myJuriNodePrivateKey,
+  NetworkProxyContract,
   nodeIndex,
+  web3,
 }) => {
   const usersToDissent = []
 

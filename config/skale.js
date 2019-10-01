@@ -10,7 +10,6 @@ SKALE Private Net Endpoint 2: http://165.22.133.157:10101
 */
 
 const Tx = require('ethereumjs-tx')
-const Web3 = require('web3')
 
 const awsControllerUrl = require('../management/awsControllerUrl')
 
@@ -19,7 +18,7 @@ const schainEndpointMain =
   'https://rinkeby.infura.io/v3/4744851d37ac46bd95eddf0d50f062a4'
 
 // const schainEndpointSide = `http://${awsControllerUrl}:7545`
-// const schainEndpointSide = 'http://localhost:7545'
+const schainEndpointSide = 'http://localhost:7545'
 
 // const schainEndpointSide = 'http://104.248.79.40:8057'
 // const schainID = 'UPPC7EI4'
@@ -27,15 +26,20 @@ const schainEndpointMain =
 // const schainEndpointSide = 'http://165.22.133.157:10101'
 // const schainID = '1KYUQ531'
 
-const schainEndpointSide = 'https://sip0.skalenodes.com:10018'
+// const schainEndpointSide = 'https://sip0.skalenodes.com:10018'
 const schainID = 'quiet-alkalurops'
 
 const getEndpoint = isMain => (isMain ? schainEndpointMain : schainEndpointSide)
 
-const getWeb3Provider = isMain =>
-  new Web3.providers.HttpProvider(getEndpoint(isMain))
+const getWeb3Provider = isMain => {
+  const Web3 = require('web3')
+  return new Web3.providers.HttpProvider(getEndpoint(isMain))
+}
 
-const getWeb3 = isMain => new Web3(getWeb3Provider(isMain))
+const getWeb3 = isMain => {
+  const Web3 = require('web3')
+  return new Web3(getWeb3Provider(isMain))
+}
 
 // const privateTestnetJson = require('../contracts/skale/private_skale_testnet_proxy.json')
 const privateTestnetJson = require('../contracts/skale/rinkeby_ABIs.json')

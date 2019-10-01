@@ -1,6 +1,6 @@
-const overwriteLog = (msg, parentPort) => {
+const overwriteLogEnd = (msg, parentPort) => {
   if (parentPort) {
-    parentPort.postMessage('OVERWRITE_START' + msg)
+    parentPort.postMessage('OVERWRITE_END' + msg)
     return
   }
 
@@ -12,6 +12,7 @@ const overwriteLog = (msg, parentPort) => {
   }
 
   process.stdout.write(msg)
+  process.stdout.write('\n')
 }
 
-module.exports = overwriteLog
+module.exports = overwriteLogEnd

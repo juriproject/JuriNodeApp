@@ -1,4 +1,5 @@
-const { web3 } = require('./testing')
+// const { web3 } = require('./testing')
+const { getWeb3 } = require('./skale')
 
 let bondingAddress, juriTokenAddress, juriFeesTokenAddress
 
@@ -7,26 +8,36 @@ const ERC20MintableAbi = require('../contracts/juri/ERC20Mintable').abi
 const JuriStakingPoolWithOracleMockAbi = require('../contracts/juri/JuriStakingPoolWithOracleMock')
   .abi
 const JuriTokenAbi = require('../contracts/juri/JuriTokenMock').abi
-const NetworkProxyAbi = require('../contracts/juri/JuriNetworkProxy').abi
+const NetworkProxyMockAbi = require('../contracts/juri/JuriNetworkProxyMock')
+  .abi
 const PoolAbi = require('../contracts/juri/JuriStakingPoolWithOracle').abi
 
-const networkProxyAddress = '0x6cA7D55f2ddF61f9839AF750383CA91Cb60A4946'
-// const networkProxyAddress = '0xf204a4Ef082f5c04bB89F7D5E6568B796096735a'
+// const networkProxyAddress = '0x6cA7D55f2ddF61f9839AF750383CA91Cb60A4946'
+const networkProxyAddress = '0x306C9f5FA98C77DC4D092dCA945E5DF919a1519e'
 
-const NetworkProxyContract = new web3.eth.Contract(
-  NetworkProxyAbi,
-  networkProxyAddress
-)
+// const NetworkProxyContract = new web3.eth.Contract(
+//   NetworkProxyMockAbi,
+//   networkProxyAddress
+// )
+
+const getNetworkProxyContract = () => {
+  const web3 = getWeb3(false)
+  return new web3.eth.Contract(NetworkProxyMockAbi, networkProxyAddress)
+}
 
 const getBondingAddress = async () => {
   if (bondingAddress) return bondingAddress
-  bondingAddress = await NetworkProxyContract.methods.bonding().call()
+  bondingAddress = await getNetworkProxyContract()
+    .methods.bonding()
+    .call()
 
   return bondingAddress
 }
 
-const getBondingContract = async () =>
-  new web3.eth.Contract(BondingAbi, await getBondingAddress())
+const getBondingContract = async () => {
+  const web3 = getWeb3(false)
+  return new web3.eth.Contract(BondingAbi, await getBondingAddress())
+}
 
 const getJuriTokenAddress = async () => {
   if (juriTokenAddress) return juriTokenAddress
@@ -37,24 +48,32 @@ const getJuriTokenAddress = async () => {
   return juriTokenAddress
 }
 
-const getJuriTokenContract = async () =>
-  new web3.eth.Contract(JuriTokenAbi, await getJuriTokenAddress())
+const getJuriTokenContract = async () => {
+  const web3 = getWeb3(false)
+  return new web3.eth.Contract(JuriTokenAbi, await getJuriTokenAddress())
+}
 
 const getJuriFeesTokenAddress = async () => {
   if (juriFeesTokenAddress) return juriFeesTokenAddress
 
-  juriFeesTokenAddress = await NetworkProxyContract.methods
-    .juriFeesToken()
+  juriFeesTokenAddress = await getNetworkProxyContract()
+    .methods.juriFeesToken()
     .call()
   return juriFeesTokenAddress
 }
 
-const getJuriFeesTokenContract = async () =>
-  new web3.eth.Contract(ERC20MintableAbi, await getJuriFeesTokenAddress())
+const getJuriFeesTokenContract = async () => {
+  const web3 = getWeb3(false)
+  return new web3.eth.Contract(
+    ERC20MintableAbi,
+    await getJuriFeesTokenAddress()
+  )
+}
 
 const getJuriStakingPoolContracts = async () => {
-  const poolAddresses = await NetworkProxyContract.methods
-    .getRegisteredJuriStakingPools()
+  const web3 = getWeb3(false)
+  const poolAddresses = await getNetworkProxyContract()
+    .methods.getRegisteredJuriStakingPools()
     .call()
 
   return poolAddresses.map(
@@ -73,6 +92,7 @@ module.exports = {
   getJuriStakingPoolContracts,
   JuriStakingPoolWithOracleMockAbi,
   networkProxyAddress,
-  NetworkProxyContract,
+  // NetworkProxyContract,
+  getNetworkProxyContract,
   PoolAbi,
 }

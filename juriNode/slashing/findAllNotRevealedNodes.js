@@ -1,7 +1,11 @@
-const { NetworkProxyContract } = require('../../config/contracts')
 const { ZERO_ADDRESS } = require('../../config/testing')
 
-const findAllNotRevealedNodes = async ({ allNodes, allUsers, roundIndex }) => {
+const findAllNotRevealedNodes = async ({
+  allNodes,
+  allUsers,
+  NetworkProxyContract,
+  roundIndex,
+}) => {
   const notRevealedNodes = []
 
   for (let i = 0; i < allNodes.length; i++) {

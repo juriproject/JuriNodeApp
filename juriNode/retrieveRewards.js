@@ -1,8 +1,4 @@
-const {
-  NetworkProxyContract,
-  networkProxyAddress,
-} = require('../config/contracts')
-const { web3 } = require('../config/testing')
+const { networkProxyAddress } = require('../config/contracts')
 
 const sendTx = require('../helpers/sendTx')
 
@@ -11,7 +7,9 @@ const retrieveRewards = async ({
   juriTokenAddress,
   myJuriNodeAddress,
   myJuriNodePrivateKey,
+  NetworkProxyContract,
   roundIndex,
+  web3,
 }) => {
   /* await sendTx({
     data: JuriTokenContract.methods.retrieveRoundInflationRewards().encodeABI(),

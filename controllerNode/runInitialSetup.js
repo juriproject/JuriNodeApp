@@ -6,27 +6,29 @@ const {
   getJuriTokenAddress,
   getJuriTokenContract,
   networkProxyAddress,
-  NetworkProxyContract,
+  getNetworkProxyContract,
 } = require('../config/contracts')
 
-const { Ether1e17, oneEther, web3 } = require('../config/testing')
+const { getWeb3 } = require('../config/skale')
 
 const { controllerNode, nodes, users } = require('../config/accounts')
 
 const sendTx = require('../helpers/sendTx')
 const overwriteLog = require('../helpers/overwriteLog')
 
-const { BN } = web3.utils
-
 const runInitialSetup = async ({
   bondingAddress,
   BondingContract,
   juriTokenAddress,
   JuriTokenContract,
+  NetworkProxyContract,
   originalAccount,
   originalPrivateKey,
   web3,
 }) => {
+  const oneEther = new web3.utils.BN('1000000000000000000')
+  const Ether1e17 = new web3.utils.BN('100000000000000000')
+
   const nonceOriginalAccount1 = await web3.eth.getTransactionCount(
     originalAccount
   )
@@ -81,7 +83,7 @@ const runInitialSetup = async ({
 
     overwriteLog(`   Mint 10,000 tokens to node ${i}...`)
 
-    const tenThousandEther = oneEther.mul(new BN(10000))
+    const tenThousandEther = oneEther.mul(new web3.utils.BN(10000))
 
     await sendTx({
       data: JuriTokenContract.methods
@@ -138,6 +140,9 @@ const exec = async () => {
   const originalAccount = controllerNode.address
   const originalPrivateKey = controllerNode.privateKeyBuffer
 
+  const NetworkProxyContract = getNetworkProxyContract()
+  const web3 = getWeb3(false)
+
   const bondingAddress = await getBondingAddress()
   const BondingContract = await getBondingContract()
   // const juriFeesTokenAdress = await getJuriFeesTokenAddress()
@@ -155,6 +160,7 @@ const exec = async () => {
     BondingContract,
     juriTokenAddress,
     JuriTokenContract,
+    NetworkProxyContract,
     originalAccount,
     originalPrivateKey,
     web3,

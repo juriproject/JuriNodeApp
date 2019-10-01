@@ -4,18 +4,23 @@ const {
   getJuriTokenAddress,
   getJuriTokenContract,
   getJuriFeesTokenContract,
-  NetworkProxyContract,
+  getNetworkProxyContract,
 } = require('../config/contracts')
 const { ZERO_ADDRESS } = require('../config/testing')
+const { getWeb3 } = require('../config/skale')
+
 const { nodes } = require('../config/accounts')
 
 const overwriteLog = require('../helpers/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogEnd')
 
 const filterAsync = require('../helpers/filterAsync')
 const parseRevertMessage = require('../helpers/parseRevertMessage')
 
 const checkForInvalidAnswers = require('./checkForInvalidAnswers')
 const getAssignedUsersIndexes = require('./getAssignedUsersIndexes')
+const moveFromDissentToNextPeriod = require('./moveFromDissentToNextPeriod')
+const moveToDissentPeriod = require('./moveToDissentPeriod')
 const moveToNextRound = require('./moveToNextRound')
 const retrieveAssignedUsers = require('./retrieveAssignedUsers')
 const retrieveRewards = require('./retrieveRewards')
@@ -25,12 +30,25 @@ const sendReveals = require('./sendReveals')
 const slashDishonestNodes = require('./slashing')
 const verifyHeartRateData = require('./verifyHeartRateData')
 const waitForNextStage = require('./waitForNextStage')
+const waitForNextRound = require('./waitForNextRound')
 
 const runRound = async ({
+  allNodes,
+  bondingAddress,
+  BondingContract,
+  isDownloadingFiles,
+  juriTokenAddress,
+  JuriTokenContract,
+  JuriFeesTokenContract,
   maxUserCount,
   myJuriNodePrivateKey,
   myJuriNodeAddress,
+  NetworkProxyContract,
   nodeIndex,
+  parentPort,
+  roundIndex,
+  timePerStage,
+  web3,
   failureOptions: {
     isNotRevealing,
     isSendingIncorrectResult,
@@ -38,42 +56,41 @@ const runRound = async ({
     isSendingIncorrectDissent,
   },
 }) => {
-  console.log('Starting round with mode: ', {
-    failureOptions: {
-      isNotRevealing,
-      isSendingIncorrectResult,
-      isOffline,
-      isSendingIncorrectDissent,
-    },
-    nodeIndex,
-  })
+  parentPort.postMessage(
+    'Starting round with mode: ' +
+      JSON.stringify({
+        failureOptions: {
+          isNotRevealing,
+          isSendingIncorrectResult,
+          isOffline,
+          isSendingIncorrectDissent,
+        },
+        nodeIndex,
+      })
+  )
 
-  const bondingAddress = await getBondingAddress()
-  const BondingContract = await getBondingContract()
-  const juriTokenAddress = await getJuriTokenAddress()
-  const JuriTokenContract = await getJuriTokenContract()
-  const JuriFeesTokenContract = await getJuriFeesTokenContract()
-
-  /* console.log({
+  /* postMessage({
     nodeIndex,
     bondedStake: (await BondingContract.methods
       .getBondedStakeOfNode(allNodes[nodeIndex])
       .call()).toString(),
   }) */
 
-  // SETUP
-  const roundIndex = await NetworkProxyContract.methods.roundIndex().call()
-  const allNodes = await BondingContract.methods.getAllStakingNodes().call()
-
   // STAGE 2
   const { assignedUsers, uniqUsers } = await retrieveAssignedUsers({
     maxUserCount,
     myJuriNodeAddress,
+    NetworkProxyContract,
+    parentPort,
     roundIndex,
+    web3,
   })
 
   const wasCompliantData = await verifyHeartRateData({
     assignedUsers,
+    isDownloadingFiles,
+    NetworkProxyContract,
+    parentPort,
     roundIndex,
   })
   const complianceData = isSendingIncorrectResult
@@ -81,30 +98,38 @@ const runRound = async ({
     : wasCompliantData.map(({ wasCompliant }) => wasCompliant)
 
   // STAGE 3
-  overwriteLog(`Sending commitments... (node ${nodeIndex})`)
+  overwriteLog(`Sending commitments (node ${nodeIndex})...`, parentPort)
   const { randomNumbers } = await sendCommitments({
     users: assignedUsers,
     isDissent: false,
     myJuriNodeAddress,
     myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
     nodeIndex,
     wasCompliantData: complianceData,
+    web3,
   })
-  overwriteLog(`Sent commitments (node ${nodeIndex})!`)
-  process.stdout.write('\n')
+  overwriteLogEnd(`Sent commitments (node ${nodeIndex})!`, parentPort)
 
-  await waitForNextStage(nodeIndex)
+  await waitForNextStage({
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    timePerStage,
+  })
 
   const finishedAssignedUsersIndexes = await getAssignedUsersIndexes({
     myJuriNodeAddress,
+    NetworkProxyContract,
     roundIndex,
     users: uniqUsers,
   })
 
-  console.log({ nodeIndex, finishedAssignedUsersIndexes })
+  parentPort.postMessage({ nodeIndex, finishedAssignedUsersIndexes })
 
   // STAGE 3
-  overwriteLog(`Sending reveals... (node ${nodeIndex})`)
+  overwriteLog(`Sending reveals (node ${nodeIndex})...`, parentPort)
   if (!isNotRevealing) {
     await sendReveals({
       users: finishedAssignedUsersIndexes.map(i => assignedUsers[i]),
@@ -115,17 +140,38 @@ const runRound = async ({
       isDissent: false,
       myJuriNodeAddress,
       myJuriNodePrivateKey,
+      NetworkProxyContract,
+      parentPort,
+      web3,
     })
-    overwriteLog(`Sent reveals (node ${nodeIndex})!`)
+    overwriteLogEnd(`Sent reveals (node ${nodeIndex})!`, parentPort)
   } else {
-    overwriteLog(`Skipped sending reveals (node ${nodeIndex})!`)
+    overwriteLogEnd(`Skipped sending reveals (node ${nodeIndex})!`, parentPort)
   }
-  process.stdout.write('\n')
 
-  await waitForNextStage(nodeIndex)
+  await waitForNextStage({
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    timePerStage,
+  })
+
+  overwriteLog(`Moving to dissent period (node ${nodeIndex})...`, parentPort)
+  await moveToDissentPeriod({
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    web3,
+  })
+  overwriteLogEnd(`Moved to dissent period (node ${nodeIndex})!`, parentPort)
 
   // STAGE 4
-  overwriteLog(`Dissenting to invalid answers... (node ${nodeIndex})`)
+  overwriteLog(
+    `Dissenting to invalid answers (node ${nodeIndex})...`,
+    parentPort
+  )
   await checkForInvalidAnswers({
     bondingAddress,
     isSendingIncorrectDissent,
@@ -134,12 +180,22 @@ const runRound = async ({
     wasCompliantData: complianceData,
     myJuriNodeAddress,
     myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
     nodeIndex,
+    web3,
   })
-  overwriteLog(`Dissented to invalid answers (node ${nodeIndex})!`)
-  process.stdout.write('\n')
+  overwriteLogEnd(
+    `Dissented to invalid answers (node ${nodeIndex})!`,
+    parentPort
+  )
 
-  await waitForNextStage(nodeIndex)
+  /* await waitForNextStage({
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    timePerStage,
+  }) */
 
   const resultsBefore = []
   for (let i = 0; i < uniqUsers.length; i++) {
@@ -170,10 +226,34 @@ const runRound = async ({
       isSendingResults: !isOffline && dissentedUsers.length > 0,
       myJuriNodeAddress,
       myJuriNodePrivateKey,
+      NetworkProxyContract,
+      parentPort,
       nodeIndex,
       uniqUsers,
+      web3,
     })
-  else await waitForNextStage(nodeIndex)
+  else {
+    parentPort.postMessage(`Skipped dissent round (node ${nodeIndex})!`)
+
+    parentPort.postMessage({
+      nodeIndex,
+      BEFORE_SKIPPED_DISSENT: 'true',
+      currentStage: await NetworkProxyContract.methods.currentStage().call(),
+    })
+
+    /* await waitForNextStage({
+      NetworkProxyContract,
+      parentPort,
+      nodeIndex,
+      timePerStage,
+    }) */
+
+    parentPort.postMessage({
+      nodeIndex,
+      AFTER_SKIPPED_DISSENT: 'YES',
+      currentStage: await NetworkProxyContract.methods.currentStage().call(),
+    })
+  }
 
   const resultsAfter = []
   for (let i = 0; i < uniqUsers.length; i++) {
@@ -185,9 +265,46 @@ const runRound = async ({
     })
   }
 
-  if (nodeIndex === 0) console.log({ nodeIndex, resultsBefore, resultsAfter })
+  if (nodeIndex === 0)
+    parentPort.postMessage({ nodeIndex, resultsBefore, resultsAfter })
 
-  overwriteLog(`Slashing dishonest nodes... (node ${nodeIndex})`)
+  parentPort.postMessage({
+    nodeIndex,
+    THREE_BEFORE_SLASH: 'true',
+    currentStage: await NetworkProxyContract.methods.currentStage().call(),
+  })
+
+  await waitForNextStage({
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    timePerStage,
+  })
+
+  parentPort.postMessage({
+    nodeIndex,
+    TWO_BEFORE_SLASH: 'true',
+    currentStage: await NetworkProxyContract.methods.currentStage().call(),
+  })
+
+  overwriteLog(`Moving to slashing period (node ${nodeIndex})...`, parentPort)
+  await moveFromDissentToNextPeriod({
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    web3,
+  })
+  overwriteLogEnd(`Moved to slashing period (node ${nodeIndex})!`, parentPort)
+
+  parentPort.postMessage({
+    nodeIndex,
+    ONE_BEFORE_SLASH: 'true',
+    currentStage: await NetworkProxyContract.methods.currentStage().call(),
+  })
+
+  overwriteLog(`Slashing dishonest nodes... (node ${nodeIndex})`, parentPort)
   await slashDishonestNodes({
     allNodes,
     allUsers: uniqUsers,
@@ -196,17 +313,46 @@ const runRound = async ({
     BondingContract,
     myJuriNodeAddress,
     myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
     nodeIndex,
     roundIndex,
   })
-  overwriteLog(`Dishonest nodes slashed (node ${nodeIndex})!`)
-  process.stdout.write('\n')
+  overwriteLogEnd(`Dishonest nodes slashed (node ${nodeIndex})!`, parentPort)
+
+  parentPort.postMessage({
+    nodeIndex,
+    AFTER_SLASH: 'true',
+    currentStage: await NetworkProxyContract.methods.currentStage().call(),
+  })
+
+  /* await waitForNextStage({
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    timePerStage,
+  }) */
+
+  parentPort.postMessage({
+    nodeIndex,
+    BEFORE_MOVE: 'true',
+    currentStage: await NetworkProxyContract.methods.currentStage().call(),
+  })
 
   // STAGE 7
   await moveToNextRound({
     myJuriNodeAddress,
     myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
     nodeIndex,
+    web3,
+  })
+
+  parentPort.postMessage({
+    nodeIndex,
+    AFTER_MOVE: 'YES',
+    currentStage: await NetworkProxyContract.methods.currentStage().call(),
   })
 
   // FINISH UP
@@ -222,7 +368,10 @@ const runRound = async ({
     juriTokenAddress,
     myJuriNodeAddress,
     myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
     roundIndex,
+    web3,
   })
 
   const balanceJuriTokenAfter = (await JuriTokenContract.methods
@@ -232,39 +381,78 @@ const runRound = async ({
     .balanceOf(myJuriNodeAddress)
     .call()).toString()
 
-  console.log({ balanceJuriTokenBefore, balanceJuriTokenAfter, nodeIndex })
-  console.log({
+  parentPort.postMessage({
+    balanceJuriTokenBefore,
+    balanceJuriTokenAfter,
+    nodeIndex,
+  })
+  parentPort.postMessage({
     balanceJuriFeesTokenBefore,
     balanceJuriFeesTokenAfter,
     nodeIndex,
   })
 
   // TODO sleep + retrieve newly minted tokens from main
-
-  // await sleep(times[timeForSlashingStage])
 }
 
-const safeRunRound = async params => {
-  try {
-    await runRound(params)
-  } catch (error) {
-    console.log({ error })
-    console.log({
-      nodeIndex: params.nodeIndex,
-      RunRoundError: error.message.includes('revertReason')
-        ? parseRevertMessage(error.message)
-        : error.message,
-    })
+const safeRunRounds = async params => {
+  const web3 = getWeb3(false)
+  const NetworkProxyContract = await getNetworkProxyContract()
+  const bondingAddress = await getBondingAddress()
+  const BondingContract = await getBondingContract()
+  const juriTokenAddress = await getJuriTokenAddress()
+  const JuriTokenContract = await getJuriTokenContract()
+  const JuriFeesTokenContract = await getJuriFeesTokenContract()
+
+  for (let i = 0; i < params.maxRoundsCount; i++) {
+    const roundIndex = parseInt(
+      await NetworkProxyContract.methods.roundIndex().call()
+    )
+    const allNodes = await BondingContract.methods.getAllStakingNodes().call()
+
+    const { address, privateKeyBuffer } = nodes[params.nodeIndex]
+
+    try {
+      await runRound({
+        ...params,
+        roundIndex,
+        allNodes,
+        bondingAddress,
+        BondingContract,
+        juriTokenAddress,
+        JuriTokenContract,
+        JuriFeesTokenContract,
+        myJuriNodePrivateKey: privateKeyBuffer,
+        myJuriNodeAddress: address,
+        NetworkProxyContract,
+        web3,
+      })
+    } catch (error) {
+      console.log({ error })
+      params.parentPort.postMessage({ nodeIndex: params.nodeIndex, error })
+      params.parentPort.postMessage({
+        nodeIndex: params.nodeIndex,
+        RunRoundError: error.message.includes('revertReason')
+          ? parseRevertMessage(error.message)
+          : error.message,
+      })
+    }
+
+    await waitForNextRound({ nodeIndex: params.nodeIndex, roundIndex })
   }
 }
 
-const exec = async () => {
+/* const exec = async () => {
+  const isDownloadingFiles = process.env.IS_DOWNLOADING_FILES === 'true'
+  const maxRoundsCount = parseInt(process.env.MAX_ROUNDS_COUNT)
   const maxUserCount = parseInt(process.env.USER_COUNT)
   const nodeIndex = parseInt(process.env.NODE_INDEX)
 
   const { address, privateKeyBuffer } = nodes[nodeIndex]
 
-  await safeRunRound({
+  await safeRunRounds({
+    isDownloadingFiles,
+    maxRoundsCount,
     maxUserCount,
     myJuriNodePrivateKey: privateKeyBuffer,
     myJuriNodeAddress: address,
@@ -277,7 +465,6 @@ const exec = async () => {
     },
   })
 }
+exec() */
 
-exec()
-
-module.exports = safeRunRound
+module.exports = safeRunRounds

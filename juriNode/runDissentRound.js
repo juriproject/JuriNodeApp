@@ -7,9 +7,11 @@ const runDissentRound = async ({
   isSendingResults,
   myJuriNodeAddress,
   myJuriNodePrivateKey,
+  NetworkProxyContract,
   nodeIndex,
   uniqUsers,
   wasCompliantData,
+  web3,
 }) => {
   let randomNumbers
 
@@ -22,8 +24,10 @@ const runDissentRound = async ({
       isDissent: true,
       myJuriNodeAddress,
       myJuriNodePrivateKey,
+      NetworkProxyContract,
       nodeIndex,
       wasCompliantData,
+      web3,
     })).randomNumbers
     console.log(`Sent dissent commitments (node ${nodeIndex})!`)
   }
@@ -48,6 +52,8 @@ const runDissentRound = async ({
       isDissent: true,
       myJuriNodeAddress,
       myJuriNodePrivateKey,
+      NetworkProxyContract,
+      web3,
     })
     console.log(`Dissent reveals sent (node ${nodeIndex})!`)
   }

@@ -1,20 +1,18 @@
 const crypto = require('crypto')
 const Web3Utils = require('web3-utils')
 
-const {
-  NetworkProxyContract,
-  networkProxyAddress,
-} = require('../config/contracts')
-const { web3 } = require('../config/testing')
+const { networkProxyAddress } = require('../config/contracts')
 
 const sendTx = require('../helpers/sendTx')
 
 const sendCommitments = async ({
   myJuriNodeAddress,
   myJuriNodePrivateKey,
+  NetworkProxyContract,
   users,
   isDissent,
   wasCompliantData,
+  web3,
 }) => {
   const userAddresses = []
   const wasCompliantDataCommitments = []

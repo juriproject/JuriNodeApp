@@ -1,42 +1,63 @@
-const { controllerNode } = require('../config/accounts')
 const {
   getJuriStakingPoolContracts,
   getJuriFeesTokenContract,
-  NetworkProxyContract,
+  getNetworkProxyContract,
 } = require('../config/contracts')
-const { web3 } = require('../config/testing')
 
+const addUserHeartRateFiles = require('./addUserHeartRateFiles')
 const overwriteLog = require('../helpers/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
 const sleep = require('../helpers/sleep')
 
-const moveToNextStage = require('./moveToNextStage')
+const moveTimeToNextStage = require('./moveTimeToNextStage')
 
-const runControllerRound = async () => {
+const { getWeb3 } = require('../config/skale')
+
+const Stages = {
+  '0': 'USER_ADDING_HEART_RATE_DATA',
+  '1': 'NODES_ADDING_RESULT_COMMITMENTS',
+  '2': 'NODES_ADDING_RESULT_REVEALS',
+  '3': 'DISSENTING_PERIOD',
+  '4': 'DISSENTS_NODES_ADDING_RESULT_COMMITMENTS',
+  '5': 'DISSENTS_NODES_ADDING_RESULT_REVEALS',
+  '6': 'SLASHING_PERIOD',
+}
+
+const runControllerRound = async ({
+  controllerAddress,
+  controllerKeyBuffer,
+  parentPort,
+  timePerStage,
+}) => {
+  const web3 = getWeb3(false)
+  const NetworkProxyContract = getNetworkProxyContract()
+
   const roundIndex = await NetworkProxyContract.methods.roundIndex().call()
 
-  for (let i = 0; i < 5; i++) {
-    await sleep(parseInt(process.env.TIME_PER_STAGE) + 200)
+  for (let i = 0; i < 3; i++) {
+    await sleep(timePerStage * 1000 + 200)
 
-    overwriteLog('Moving stage...')
-    await moveToNextStage({
-      from: controllerNode.address,
-      key: controllerNode.privateKeyBuffer,
+    const currentStage = await NetworkProxyContract.methods
+      .currentStage()
+      .call()
+
+    overwriteLog(`Moving time from ${Stages[currentStage]}...`, parentPort)
+    await moveTimeToNextStage({
+      from: controllerAddress,
+      key: controllerKeyBuffer,
     })
-    overwriteLog('Moved stage!')
+    overwriteLogEnd(`Moved!`, parentPort)
   }
 
-  process.stdout.write('\n')
+  await sleep(timePerStage * 1000 * 5)
 
   const juriFees = 100
   const JuriStakingPoolContracts = await getJuriStakingPoolContracts()
   const JuriTokenFeesContract = await getJuriFeesTokenContract()
 
-  const roundIndex2 = await NetworkProxyContract.methods.roundIndex().call()
-
-  console.log({
+  parentPort.postMessage({
     roundIndex: roundIndex.toString(),
-    roundIndex2: roundIndex2.toString(),
     totalJuriFeesInProxyBefore: (await NetworkProxyContract.methods
       .totalJuriFees(roundIndex)
       .call()).toString(),
@@ -45,7 +66,7 @@ const runControllerRound = async () => {
   for (let i = 0; i < JuriStakingPoolContracts.length; i++) {
     const JuriStakingPoolContract = JuriStakingPoolContracts[i]
 
-    /* console.log({
+    /* postMessage({
       balanceBeforeMint: (await JuriTokenFeesContract.methods
         .balanceOf(JuriStakingPoolContract._address)
         .call()).toString(),
@@ -55,30 +76,30 @@ const runControllerRound = async () => {
       data: JuriTokenFeesContract.methods
         .mint(JuriStakingPoolContract._address, juriFees)
         .encodeABI(),
-      from: controllerNode.address,
+      from: controllerAddress,
       to: JuriTokenFeesContract._address,
-      privateKey: controllerNode.privateKeyBuffer,
+      privateKey: controllerKeyBuffer,
       web3,
     })
 
-    /* console.log({
+    /* parentPort.postMessage({
       balanceAfterMint: (await JuriTokenFeesContract.methods
         .balanceOf(JuriStakingPoolContract._address)
         .call()).toString(),
     }) */
 
-    overwriteLog(`Handle JuriFees in pool ${i}...`)
+    overwriteLog(`Handle JuriFees in pool ${i}...`, parentPort)
     await sendTx({
       data: JuriStakingPoolContract.methods
         .handleJuriFees(roundIndex, juriFees)
         .encodeABI(),
-      from: controllerNode.address,
+      from: controllerAddress,
       to: JuriStakingPoolContract._address,
-      privateKey: controllerNode.privateKeyBuffer,
+      privateKey: controllerKeyBuffer,
       web3,
     })
 
-    /* console.log({
+    /* parentPort.postMessage({
       balanceAfterHandling: (await JuriTokenFeesContract.methods
         .balanceOf(JuriStakingPoolContract._address)
         .call()).toString(),
@@ -87,33 +108,51 @@ const runControllerRound = async () => {
         .call()).toString(),
     }) */
 
-    process.stdout.write('\n')
-    overwriteLog(`Handled JuriFees in pool ${i}!`)
-    process.stdout.write('\n')
-
-    /* overwriteLog('Moving stage...')
-    await moveToNextStage({
-      from: controllerNode.address,
-      key: controllerNode.privateKeyBuffer,
-    })
-    overwriteLog('Moved stage!')
-    process.stdout.write('\n') */
+    overwriteLogEnd(`Handled JuriFees in pool ${i}!`, parentPort)
   }
 
-  const roundIndex3 = await NetworkProxyContract.methods.roundIndex().call()
-
-  console.log({
+  parentPort.postMessage({
     roundIndex: roundIndex.toString(),
-    roundIndex2: roundIndex2.toString(),
-    roundIndex3: roundIndex3.toString(),
     totalJuriFeesInProxyAfter: (await NetworkProxyContract.methods
       .totalJuriFees(roundIndex)
       .call()).toString(),
   })
 }
 
-runControllerRound()
+const runControllerRounds = async ({
+  controllerAddress,
+  controllerKeyUint,
+  isUploadingFiles,
+  maxUserCount,
+  maxRoundsCount,
+  parentPort,
+  timePerStage,
+}) => {
+  const controllerKeyBuffer = Buffer.from(controllerKeyUint)
 
-// const TIME_PER_STAGE = 1000 * 50
+  for (let i = 0; i < maxRoundsCount; i++) {
+    await runControllerRound({
+      controllerAddress,
+      controllerKeyBuffer,
+      parentPort,
+      timePerStage,
+    })
 
-module.exports = runControllerRound
+    await sleep(timePerStage + 200)
+    await addUserHeartRateFiles({
+      controllerAddress,
+      controllerKeyBuffer,
+      isUploadingFiles,
+      maxUserCount,
+      parentPort,
+    })
+  }
+}
+
+/* runControllerRounds({
+  isUploadingFiles: process.env.IS_UPLOADING_FILES === 'true',
+  maxRoundsCount: parseInt(process.env.MAX_ROUNDS_COUNT),
+  maxUserCount: parseInt(process.env.MAX_USER_COUNT),
+}) */
+
+module.exports = runControllerRounds

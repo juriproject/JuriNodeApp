@@ -1,7 +1,11 @@
-const { NetworkProxyContract } = require('../config/contracts')
-const { fileStorage } = require('../config/testing')
+const { getFilestorage } = require('../config/testing')
 
-const downloadHeartRateDataFiles = async ({ assignedUsers, roundIndex }) => {
+const downloadHeartRateDataFiles = async ({
+  assignedUsers,
+  isDownloadingFiles,
+  NetworkProxyContract,
+  roundIndex,
+}) => {
   const heartRateDataFiles = []
 
   for (let i = 0; i < assignedUsers.length; i++) {
@@ -10,9 +14,9 @@ const downloadHeartRateDataFiles = async ({ assignedUsers, roundIndex }) => {
       .getHeartRateDataStoragePath(roundIndex, userAddress)
       .call()
 
-    const heartRateData = (await fileStorage.downloadToBuffer(
-      storagePath
-    )).toString('utf-8')
+    const heartRateData = isDownloadingFiles
+      ? (await getFilestorage().downloadToBuffer(storagePath)).toString('utf-8')
+      : (parseInt(userAddress) > Math.pow(16, 40) / 2).toString()
 
     heartRateDataFiles.push({
       user: userAddress,
@@ -37,9 +41,16 @@ const analyzeHeartRateData = async heartRateDataFiles => {
   return wasCompliantData
 }
 
-const verifyHeartRateData = async ({ assignedUsers, roundIndex }) => {
+const verifyHeartRateData = async ({
+  assignedUsers,
+  isDownloadingFiles,
+  NetworkProxyContract,
+  roundIndex,
+}) => {
   const heartRateDataFiles = await downloadHeartRateDataFiles({
     assignedUsers,
+    isDownloadingFiles,
+    NetworkProxyContract,
     roundIndex,
   })
 

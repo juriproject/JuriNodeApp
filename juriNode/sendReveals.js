@@ -1,9 +1,4 @@
-const {
-  NetworkProxyContract,
-  networkProxyAddress,
-} = require('../config/contracts')
-const { web3 } = require('../config/testing')
-
+const { networkProxyAddress } = require('../config/contracts')
 const sendTx = require('../helpers/sendTx')
 
 const sendReveals = ({
@@ -13,6 +8,8 @@ const sendReveals = ({
   isDissent,
   myJuriNodeAddress,
   myJuriNodePrivateKey,
+  NetworkProxyContract,
+  web3,
 }) => {
   const userAddresses = isDissent ? users : users.map(({ address }) => address)
   const addMethod = isDissent

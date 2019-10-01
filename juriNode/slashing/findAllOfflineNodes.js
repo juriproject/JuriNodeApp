@@ -1,8 +1,7 @@
-const { NetworkProxyContract } = require('../../config/contracts')
-
 const findAllOfflineNodes = async ({
   allNodes,
   dissentedUsers,
+  NetworkProxyContract,
   roundIndex,
 }) => {
   const offlineNodes = []

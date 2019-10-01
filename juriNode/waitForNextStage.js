@@ -1,39 +1,40 @@
-const { NetworkProxyContract } = require('../config/contracts')
-
 const overwriteLog = require('../helpers/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogEnd')
 const sleep = require('../helpers/sleep')
 
-const waitForNextStage = async nodeIndex => {
-  overwriteLog(`Waiting for next stage... (node ${nodeIndex})`)
+const waitForNextStage = async ({
+  NetworkProxyContract,
+  nodeIndex,
+  parentPort,
+  timePerStage,
+}) => {
+  overwriteLog(`Waiting for next stage (node ${nodeIndex})... `, parentPort)
 
   await sleep(1000)
-  const currentStageBefore = parseInt(
-    await NetworkProxyContract.methods.currentStage().call()
-  )
-
-  const lastStageUpdate = parseInt(
+  const lastStageUpdateBefore = parseInt(
     await NetworkProxyContract.methods.lastStageUpdate().call()
   )
+
   const now = Date.now() / 1000
-  const timeSinceLastStageMove = now - lastStageUpdate
-  const timeUntilNextStage =
-    parseInt(process.env.TIME_PER_STAGE) - timeSinceLastStageMove
+  const timeSinceLastStageMove = now - lastStageUpdateBefore
+  const timeUntilNextStage = timePerStage * 1000 - timeSinceLastStageMove
+  await sleep(timeUntilNextStage)
 
-  await sleep(timeUntilNextStage + 2000)
-
-  let currentStageAfter = parseInt(
-    await NetworkProxyContract.methods.currentStage().call()
+  let lastStageUpdateAfter = parseInt(
+    await NetworkProxyContract.methods.lastStageUpdate().call()
   )
 
-  while (currentStageAfter === currentStageBefore) {
+  while (lastStageUpdateAfter === lastStageUpdateBefore) {
     await sleep(2000)
-    currentStageAfter = parseInt(
-      await NetworkProxyContract.methods.currentStage().call()
+    lastStageUpdateAfter = parseInt(
+      await NetworkProxyContract.methods.lastStageUpdate().call()
     )
   }
 
-  overwriteLog(`Waiting for next stage finished (node ${nodeIndex})!`)
-  process.stdout.write('\n')
+  overwriteLogEnd(
+    `Waiting for next stage finished (node ${nodeIndex})!`,
+    parentPort
+  )
 }
 
 module.exports = waitForNextStage

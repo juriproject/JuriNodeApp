@@ -1,21 +1,18 @@
 const Web3Utils = require('web3-utils')
 
-const {
-  NetworkProxyContract,
-  JuriStakingPoolWithOracleMockAbi,
-} = require('../config/contracts')
-const { web3 } = require('../config/testing')
-
-const { BN } = web3.utils
-const THRESHOLD = new BN(
-  '115792089237316195423570985008687907853269984665640564039457584007913129639936'
-) // TODO
+const { JuriStakingPoolWithOracleMockAbi } = require('../config/contracts')
 
 const retrieveAssignedUsers = async ({
   maxUserCount,
   myJuriNodeAddress,
+  NetworkProxyContract,
   roundIndex,
+  web3,
 }) => {
+  const THRESHOLD = new web3.utils.BN(
+    '115792089237316195423570985008687907853269984665640564039457584007913129639936'
+  ) // TODO
+
   const poolAddresses = await NetworkProxyContract.methods
     .getRegisteredJuriStakingPools()
     .call()
@@ -49,7 +46,7 @@ const retrieveAssignedUsers = async ({
     const bondedTokenAmount = 100 // TODO
 
     for (let i = 0; i < bondedTokenAmount; i++) {
-      const hash = new BN(
+      const hash = new web3.utils.BN(
         Web3Utils.soliditySha3(
           userWorkoutSignature,
           myJuriNodeAddress,
