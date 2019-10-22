@@ -5,6 +5,7 @@ const findAllIncorrectDissentNodes = require('./findAllIncorrectDissentNodes')
 
 const parseRevertMessage = require('../../helpers/parseRevertMessage')
 const overwriteLog = require('../../helpers/overwriteLog')
+const overwriteLogEnd = require('../../helpers/overwriteLogEnd')
 const sendTx = require('../../helpers/sendTx')
 
 const slashDishonestNodes = async ({

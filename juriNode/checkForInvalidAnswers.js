@@ -2,6 +2,7 @@ const { networkProxyAddress } = require('../config/contracts')
 
 const parseRevertMessage = require('../helpers/parseRevertMessage')
 const overwriteLog = require('../helpers/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
 
 const checkForInvalidAnswers = async ({
@@ -14,6 +15,7 @@ const checkForInvalidAnswers = async ({
   myJuriNodePrivateKey,
   NetworkProxyContract,
   nodeIndex,
+  parentPort,
   web3,
 }) => {
   const usersToDissent = []
@@ -44,7 +46,10 @@ const checkForInvalidAnswers = async ({
 
   if (usersToDissent.length > 0)
     try {
-      overwriteLog(`Sending dissent for users... (node ${nodeIndex})`)
+      overwriteLog(
+        `Sending dissent for users... (node ${nodeIndex})`,
+        parentPort
+      )
       await sendTx({
         data: NetworkProxyContract.methods
           .dissentToAcceptedAnswers(usersToDissent)
@@ -54,14 +59,16 @@ const checkForInvalidAnswers = async ({
         to: networkProxyAddress,
         web3,
       })
-      overwriteLog(
-        `Sending dissent for users was successful (node ${nodeIndex})!`
+      overwriteLogEnd(
+        `Sending dissent for users was successful (node ${nodeIndex})!`,
+        parentPort
       )
-      process.stdout.write('\n')
     } catch (error) {
-      overwriteLog(`Sending dissent for users failed (node ${nodeIndex})!`)
-      process.stdout.write('\n')
-      console.log({
+      overwriteLogEnd(
+        `Sending dissent for users failed (node ${nodeIndex})!`,
+        parentPort
+      )
+      parentPort.postMessage({
         nodeIndex,
         DissentError: parseRevertMessage(error.message),
       })

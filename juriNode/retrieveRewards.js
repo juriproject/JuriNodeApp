@@ -19,7 +19,7 @@ const retrieveRewards = async ({
     web3,
   }) */
 
-  console.log({
+  /* console.log({
     roundIndex: roundIndex.toString(),
     totalJuriFeesInProxyBefore: (await NetworkProxyContract.methods
       .totalJuriFees(roundIndex)
@@ -27,7 +27,7 @@ const retrieveRewards = async ({
     totalJuriFeesAtWithdrawalTimesBefore: (await NetworkProxyContract.methods
       .totalJuriFeesAtWithdrawalTimes(roundIndex, myJuriNodeAddress)
       .call()).toString(),
-  })
+  }) */
 
   await sendTx({
     data: NetworkProxyContract.methods

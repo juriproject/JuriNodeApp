@@ -2,6 +2,7 @@ const {
   getJuriStakingPoolContracts,
   getJuriFeesTokenContract,
   getNetworkProxyContract,
+  networkProxyAddress,
 } = require('../config/contracts')
 
 const addUserHeartRateFiles = require('./addUserHeartRateFiles')
@@ -14,28 +15,17 @@ const moveTimeToNextStage = require('./moveTimeToNextStage')
 
 const { getWeb3 } = require('../config/skale')
 
-const Stages = {
-  '0': 'USER_ADDING_HEART_RATE_DATA',
-  '1': 'NODES_ADDING_RESULT_COMMITMENTS',
-  '2': 'NODES_ADDING_RESULT_REVEALS',
-  '3': 'DISSENTING_PERIOD',
-  '4': 'DISSENTS_NODES_ADDING_RESULT_COMMITMENTS',
-  '5': 'DISSENTS_NODES_ADDING_RESULT_REVEALS',
-  '6': 'SLASHING_PERIOD',
-}
+const Stages = require('../helpers/Stages')
 
-const runControllerRound = async ({
+const moveTimeForNextStages = async ({
   controllerAddress,
   controllerKeyBuffer,
+  NetworkProxyContract,
   parentPort,
+  stageCount,
   timePerStage,
 }) => {
-  const web3 = getWeb3(false)
-  const NetworkProxyContract = getNetworkProxyContract()
-
-  const roundIndex = await NetworkProxyContract.methods.roundIndex().call()
-
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < stageCount; i++) {
     await sleep(timePerStage * 1000 + 200)
 
     const currentStage = await NetworkProxyContract.methods
@@ -47,10 +37,47 @@ const runControllerRound = async ({
       from: controllerAddress,
       key: controllerKeyBuffer,
     })
-    overwriteLogEnd(`Moved!`, parentPort)
+    overwriteLogEnd(`Moved stage!`, parentPort)
   }
+}
 
-  await sleep(timePerStage * 1000 * 5)
+const runControllerRound = async ({
+  controllerAddress,
+  controllerKeyBuffer,
+  NetworkProxyContract,
+  parentPort,
+  timePerStage,
+  web3,
+}) => {
+  const roundIndex = await NetworkProxyContract.methods.roundIndex().call()
+
+  await moveTimeForNextStages({
+    controllerAddress,
+    controllerKeyBuffer,
+    NetworkProxyContract,
+    parentPort,
+    timePerStage,
+    stageCount: 3,
+  })
+
+  await sleep(timePerStage * 1000 * 2) // wait for dissenting/slashing
+
+  const dissentedUsers = parseInt(
+    await NetworkProxyContract.methods.getDissentedUsers().call()
+  )
+
+  if (dissentedUsers > 0) {
+    await moveTimeForNextStages({
+      controllerAddress,
+      controllerKeyBuffer,
+      NetworkProxyContract,
+      parentPort,
+      timePerStage,
+      stageCount: 2,
+    })
+
+    await sleep(timePerStage * 1000 * 2) // wait for slashing
+  }
 
   const juriFees = 100
   const JuriStakingPoolContracts = await getJuriStakingPoolContracts()
@@ -129,16 +156,21 @@ const runControllerRounds = async ({
   timePerStage,
 }) => {
   const controllerKeyBuffer = Buffer.from(controllerKeyUint)
+  const NetworkProxyContract = getNetworkProxyContract()
+  const web3 = getWeb3(false)
 
   for (let i = 0; i < maxRoundsCount; i++) {
     await runControllerRound({
       controllerAddress,
       controllerKeyBuffer,
+      NetworkProxyContract,
       parentPort,
       timePerStage,
+      web3,
     })
 
     await sleep(timePerStage + 200)
+
     await addUserHeartRateFiles({
       controllerAddress,
       controllerKeyBuffer,
@@ -146,6 +178,19 @@ const runControllerRounds = async ({
       maxUserCount,
       parentPort,
     })
+
+    overwriteLog('Moving to nodes adding commitments stage...')
+    await sendTx({
+      data: NetworkProxyContract.methods
+        .moveToAddingCommitmentStage()
+        .encodeABI(),
+      from: controllerAddress,
+      privateKey: controllerKeyBuffer,
+      to: networkProxyAddress,
+      web3,
+    })
+
+    overwriteLogEnd('Moved to nodes adding commitments stage!')
   }
 }
 

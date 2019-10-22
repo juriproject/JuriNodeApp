@@ -2,27 +2,9 @@ const overwriteLog = require('../helpers/overwriteLog')
 const overwriteLogEnd = require('../helpers/overwriteLogEnd')
 const sleep = require('../helpers/sleep')
 
-const getLeftStageTime = async NetworkProxyContract => {
-  let stageIndex =
-    parseInt(await NetworkProxyContract.methods.currentStage().call()) + 1
-  let timeForStage = parseInt(
-    await NetworkProxyContract.methods.timesForStages(stageIndex).call()
-  )
-  let leftRoundTime = 0
+const Stages = require('../helpers/Stages')
 
-  while (timeForStage !== 0) {
-    leftRoundTime += timeForStage
-
-    stageIndex++
-    timeForStage = parseInt(
-      await NetworkProxyContract.methods.timesForStages(stageIndex).call()
-    )
-  }
-
-  return leftRoundTime
-}
-
-const waitForNextStage = async ({
+const waitForNextRound = async ({
   NetworkProxyContract,
   nodeIndex,
   parentPort,
@@ -30,16 +12,20 @@ const waitForNextStage = async ({
 }) => {
   overwriteLog(`Waiting for next round (node ${nodeIndex})...`, parentPort)
 
-  const leftRoundTime = await getLeftStageTime(NetworkProxyContract)
-  await sleep(leftRoundTime)
-
   let currentRoundIndex = roundIndex
-
   while (currentRoundIndex === roundIndex) {
-    await sleep(2000)
+    await sleep(4000)
     currentRoundIndex = parseInt(
       await NetworkProxyContract.methods.roundIndex().call()
     )
+  }
+
+  let currentStage = '0'
+  while (Stages[currentStage] === 'USER_ADDING_HEART_RATE_DATA') {
+    await sleep(4000)
+    currentStage = await NetworkProxyContract.methods.currentStage().call()
+
+    console.log('Currently at Stage: ' + Stages[currentStage])
   }
 
   overwriteLogEnd(
@@ -48,4 +34,4 @@ const waitForNextStage = async ({
   )
 }
 
-module.exports = waitForNextStage
+module.exports = waitForNextRound

@@ -1,6 +1,11 @@
-const waitForNextStage = require('./waitForNextStage')
+const moveToSlashingPeriod = require('./moveToSlashingPeriod')
 const sendCommitments = require('./sendCommitments')
 const sendReveals = require('./sendReveals')
+const waitForNextStage = require('./waitForNextStage')
+
+const overwriteLog = require('../helpers/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogEnd')
+const Stages = require('../helpers/Stages')
 
 const runDissentRound = async ({
   dissentedUsers,
@@ -9,16 +14,19 @@ const runDissentRound = async ({
   myJuriNodePrivateKey,
   NetworkProxyContract,
   nodeIndex,
-  uniqUsers,
+  parentPort,
+  timePerStage,
   wasCompliantData,
   web3,
 }) => {
   let randomNumbers
 
   // STAGE 5.1
-
   if (isSendingResults) {
-    console.log(`Sending dissent commitments... (node ${nodeIndex})`)
+    overwriteLog(
+      `Sending dissent commitments... (node ${nodeIndex})`,
+      parentPort
+    )
     randomNumbers = (await sendCommitments({
       users: dissentedUsers,
       isDissent: true,
@@ -29,37 +37,63 @@ const runDissentRound = async ({
       wasCompliantData,
       web3,
     })).randomNumbers
-    console.log(`Sent dissent commitments (node ${nodeIndex})!`)
+    overwriteLogEnd(`Sent dissent commitments (node ${nodeIndex})!`, parentPort)
   }
 
-  // await sleep(times[timeForDissentCommitmentStage])
-  await waitForNextStage(nodeIndex)
+  const currentStage0 = await NetworkProxyContract.methods.currentStage().call()
+  overwriteLogEnd(`Current Stage = ${Stages[currentStage0]}`, parentPort)
+
+  await waitForNextStage({
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    timePerStage,
+  })
 
   // STAGE 5.2
   if (isSendingResults) {
-    const dissentWasCompliantData = dissentedUsers
-      .map(user => uniqUsers.indexOf(user))
-      .filter(index => index >= 0)
-      .map(index => wasCompliantData[index])
+    parentPort.postMessage({
+      nodeIndex,
+      dissentWasCompliantData: wasCompliantData,
+    })
 
-    console.log({ dissentWasCompliantData })
-
-    console.log(`Sending dissent reveals... (node ${nodeIndex})`)
+    overwriteLog(`Sending dissent reveals... (node ${nodeIndex})`, parentPort)
     await sendReveals({
       users: dissentedUsers,
       randomNumbers,
-      wasCompliantData: dissentWasCompliantData,
+      wasCompliantData,
       isDissent: true,
       myJuriNodeAddress,
       myJuriNodePrivateKey,
       NetworkProxyContract,
       web3,
     })
-    console.log(`Dissent reveals sent (node ${nodeIndex})!`)
+    overwriteLogEnd(`Dissent reveals sent (node ${nodeIndex})!`, parentPort)
   }
 
-  // await sleep(times[timeForDissentRevealStage])
-  await waitForNextStage(nodeIndex)
+  const currentStage1 = await NetworkProxyContract.methods.currentStage().call()
+  overwriteLogEnd(`Current Stage = ${Stages[currentStage1]}`, parentPort)
+
+  await waitForNextStage({
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    timePerStage,
+  })
+
+  overwriteLog(`Moving to slashing period (node ${nodeIndex})...`, parentPort)
+  await moveToSlashingPeriod({
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    web3,
+  })
+  overwriteLogEnd(`Moved to slashing period (node ${nodeIndex})!`, parentPort)
+
+  const currentStage2 = await NetworkProxyContract.methods.currentStage().call()
+  overwriteLogEnd(`Current Stage = ${Stages[currentStage2]}`, parentPort)
 }
 
 module.exports = runDissentRound

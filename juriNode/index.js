@@ -11,11 +11,11 @@ const { getWeb3 } = require('../config/skale')
 
 const { nodes } = require('../config/accounts')
 
+const filterAsync = require('../helpers/filterAsync')
 const overwriteLog = require('../helpers/overwriteLog')
 const overwriteLogEnd = require('../helpers/overwriteLogEnd')
-
-const filterAsync = require('../helpers/filterAsync')
 const parseRevertMessage = require('../helpers/parseRevertMessage')
+const Stages = require('../helpers/Stages')
 
 const checkForInvalidAnswers = require('./checkForInvalidAnswers')
 const getAssignedUsersIndexes = require('./getAssignedUsersIndexes')
@@ -29,6 +29,7 @@ const sendCommitments = require('./sendCommitments')
 const sendReveals = require('./sendReveals')
 const slashDishonestNodes = require('./slashing')
 const verifyHeartRateData = require('./verifyHeartRateData')
+const waitForJuriFeesHandling = require('./waitForJuriFeesHandling')
 const waitForNextStage = require('./waitForNextStage')
 const waitForNextRound = require('./waitForNextRound')
 
@@ -190,13 +191,6 @@ const runRound = async ({
     parentPort
   )
 
-  /* await waitForNextStage({
-    NetworkProxyContract,
-    parentPort,
-    nodeIndex,
-    timePerStage,
-  }) */
-
   const resultsBefore = []
   for (let i = 0; i < uniqUsers.length; i++) {
     resultsBefore.push({
@@ -206,6 +200,23 @@ const runRound = async ({
         .call({ from: bondingAddress })).toString(),
     })
   }
+
+  overwriteLog(`Move from dissent period... (node ${nodeIndex})`, parentPort)
+  await waitForNextStage({
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    timePerStage,
+  })
+  await moveFromDissentToNextPeriod({
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    web3,
+  })
+  overwriteLogEnd(`Moved from dissent period (node ${nodeIndex})!`, parentPort)
 
   // STAGE 5
   const allDissentedUsers = await NetworkProxyContract.methods
@@ -218,42 +229,24 @@ const runRound = async ({
         .getUserComplianceDataCommitment(roundIndex, myJuriNodeAddress, user)
         .call()) === ZERO_ADDRESS
   )
+  const dissentComplianceData = complianceData.filter((_, i) =>
+    dissentedUsers.find(user => user === uniqUsers[i])
+  )
 
   if (allDissentedUsers.length > 0)
     await runDissentRound({
       dissentedUsers,
-      wasCompliantData: complianceData,
+      wasCompliantData: dissentComplianceData,
       isSendingResults: !isOffline && dissentedUsers.length > 0,
       myJuriNodeAddress,
       myJuriNodePrivateKey,
       NetworkProxyContract,
       parentPort,
       nodeIndex,
-      uniqUsers,
+      timePerStage,
       web3,
     })
-  else {
-    parentPort.postMessage(`Skipped dissent round (node ${nodeIndex})!`)
-
-    parentPort.postMessage({
-      nodeIndex,
-      BEFORE_SKIPPED_DISSENT: 'true',
-      currentStage: await NetworkProxyContract.methods.currentStage().call(),
-    })
-
-    /* await waitForNextStage({
-      NetworkProxyContract,
-      parentPort,
-      nodeIndex,
-      timePerStage,
-    }) */
-
-    parentPort.postMessage({
-      nodeIndex,
-      AFTER_SKIPPED_DISSENT: 'YES',
-      currentStage: await NetworkProxyContract.methods.currentStage().call(),
-    })
-  }
+  else parentPort.postMessage(`Skipped dissent round (node ${nodeIndex})!`)
 
   const resultsAfter = []
   for (let i = 0; i < uniqUsers.length; i++) {
@@ -267,42 +260,6 @@ const runRound = async ({
 
   if (nodeIndex === 0)
     parentPort.postMessage({ nodeIndex, resultsBefore, resultsAfter })
-
-  parentPort.postMessage({
-    nodeIndex,
-    THREE_BEFORE_SLASH: 'true',
-    currentStage: await NetworkProxyContract.methods.currentStage().call(),
-  })
-
-  await waitForNextStage({
-    NetworkProxyContract,
-    parentPort,
-    nodeIndex,
-    timePerStage,
-  })
-
-  parentPort.postMessage({
-    nodeIndex,
-    TWO_BEFORE_SLASH: 'true',
-    currentStage: await NetworkProxyContract.methods.currentStage().call(),
-  })
-
-  overwriteLog(`Moving to slashing period (node ${nodeIndex})...`, parentPort)
-  await moveFromDissentToNextPeriod({
-    myJuriNodeAddress,
-    myJuriNodePrivateKey,
-    NetworkProxyContract,
-    parentPort,
-    nodeIndex,
-    web3,
-  })
-  overwriteLogEnd(`Moved to slashing period (node ${nodeIndex})!`, parentPort)
-
-  parentPort.postMessage({
-    nodeIndex,
-    ONE_BEFORE_SLASH: 'true',
-    currentStage: await NetworkProxyContract.methods.currentStage().call(),
-  })
 
   overwriteLog(`Slashing dishonest nodes... (node ${nodeIndex})`, parentPort)
   await slashDishonestNodes({
@@ -320,24 +277,8 @@ const runRound = async ({
   })
   overwriteLogEnd(`Dishonest nodes slashed (node ${nodeIndex})!`, parentPort)
 
-  parentPort.postMessage({
-    nodeIndex,
-    AFTER_SLASH: 'true',
-    currentStage: await NetworkProxyContract.methods.currentStage().call(),
-  })
-
-  /* await waitForNextStage({
-    NetworkProxyContract,
-    parentPort,
-    nodeIndex,
-    timePerStage,
-  }) */
-
-  parentPort.postMessage({
-    nodeIndex,
-    BEFORE_MOVE: 'true',
-    currentStage: await NetworkProxyContract.methods.currentStage().call(),
-  })
+  const currentStage0 = await NetworkProxyContract.methods.currentStage().call()
+  overwriteLogEnd(`Current Stage = ${Stages[currentStage0]}`, parentPort)
 
   // STAGE 7
   await moveToNextRound({
@@ -349,10 +290,11 @@ const runRound = async ({
     web3,
   })
 
-  parentPort.postMessage({
+  await waitForJuriFeesHandling({
+    NetworkProxyContract,
     nodeIndex,
-    AFTER_MOVE: 'YES',
-    currentStage: await NetworkProxyContract.methods.currentStage().call(),
+    parentPort,
+    roundIndex,
   })
 
   // FINISH UP
@@ -438,7 +380,12 @@ const safeRunRounds = async params => {
       })
     }
 
-    await waitForNextRound({ nodeIndex: params.nodeIndex, roundIndex })
+    await waitForNextRound({
+      nodeIndex: params.nodeIndex,
+      parentPort: params.parentPort,
+      NetworkProxyContract,
+      roundIndex,
+    })
   }
 }
 

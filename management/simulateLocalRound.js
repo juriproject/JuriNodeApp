@@ -104,7 +104,7 @@ const exec = async () => {
         isNotRevealing: false,
         isSendingIncorrectResult: false,
         isOffline: false,
-        isSendingIncorrectDissent: false,
+        isSendingIncorrectDissent: nodeIndex === 3,
       },
     })
   }
@@ -138,6 +138,17 @@ const parseMessage = ({ msg, nodeIndex, resolve }) => {
 
   const modifiedMsg = typeof msg === 'string' ? msg : JSON.stringify(msg)
 
+  const removedStartPrefixMsg = modifiedMsg.startsWith(OVERWRITE_START_MSG)
+    ? modifiedMsg.substr(OVERWRITE_START_MSG.length) + '\n'
+    : modifiedMsg
+  const removedEndPrefixMsg = modifiedMsg.startsWith(OVERWRITE_END_MSG)
+    ? modifiedMsg.substr(OVERWRITE_END_MSG.length) + '\n'
+    : removedStartPrefixMsg
+
+  // printing immediately causes issues, see https://github.com/nodejs/help/issues/1876
+  // if (streamIndex === 0) console.log('CONTROLLER: ' + removedEndPrefixMsg)
+  // else if (streamIndex === 1) console.log('NODE: ' + removedEndPrefixMsg)
+
   if (modifiedMsg.startsWith(OVERWRITE_START_MSG)) {
     outputWriteStreams[streamIndex].write(
       modifiedMsg.substr(OVERWRITE_START_MSG.length)
@@ -146,9 +157,9 @@ const parseMessage = ({ msg, nodeIndex, resolve }) => {
   }
 
   if (modifiedMsg.startsWith(OVERWRITE_END_MSG)) {
-    // doesnt work :( requires tty stream
     // readline.clearLine(outputWriteStreams[streamIndex], 0)
     // readline.cursorTo(outputWriteStreams[streamIndex], 0)
+    // doesnt work :( requires tty stream
 
     outputWriteStreams[streamIndex].write(
       modifiedMsg.substr(OVERWRITE_END_MSG.length) + '\n'
