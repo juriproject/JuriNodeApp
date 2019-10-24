@@ -24,8 +24,6 @@ const waitForNextRound = async ({
   while (Stages[currentStage] === 'USER_ADDING_HEART_RATE_DATA') {
     await sleep(4000)
     currentStage = await NetworkProxyContract.methods.currentStage().call()
-
-    console.log('Currently at Stage: ' + Stages[currentStage])
   }
 
   overwriteLogEnd(
