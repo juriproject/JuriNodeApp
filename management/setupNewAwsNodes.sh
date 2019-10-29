@@ -2,9 +2,6 @@
 
 export $(egrep -v '^#' awsDnsNames.env | xargs)
 
-# index=6
-# HOST="NODE$index"
-
 for ((index=7; index-1<20; ++index)); do
     HOST="NODE$index"
 

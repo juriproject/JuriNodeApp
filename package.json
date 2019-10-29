@@ -33,6 +33,7 @@
   "dependencies": {
     "ethereumjs-tx": "^2.1.0",
     "juriproject-skale-filestorage": "0.0.1",
+    "ssh2": "^0.8.5",
     "web3": "^1.2.1"
   }
 }

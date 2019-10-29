@@ -24,7 +24,6 @@ nodeCleanup(async (_, signal) => {
 
 const exec = async () => {
   program
-    .option('-d, --debug', 'output extra debugging')
     .option(
       '-a, --controller-address <address>',
       'public key of controller',
@@ -43,13 +42,13 @@ const exec = async () => {
       '-up, --is-uploading-files',
       'is uploading heart rate files to SKALE'
     )
+    .option('-r, --is-running-on-aws', 'is running on remote AWS machines')
 
   program.parse(process.argv)
 
   const {
     controllerAddress,
     controllerKey,
-    debug,
     maxRounds,
     nodeCount,
     timePerStage,
@@ -57,8 +56,7 @@ const exec = async () => {
   } = program
 
   const isUploadingFiles = program.isUploadingFiles !== undefined
-
-  if (debug) console.log(program.opts())
+  const isRunningOnAws = program.isRunningOnAws !== undefined
 
   const controllerKeyBuffer = Buffer.from(controllerKey.slice(2), 'hex')
   const controllerLogFile = 'logs/controllerNode.log'
