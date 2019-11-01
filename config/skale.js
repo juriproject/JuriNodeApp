@@ -20,6 +20,10 @@ const schainEndpointMain =
 const schainEndpointSide = `http://${awsControllerUrl}:7545`
 // const schainEndpointSide = 'http://localhost:7545'
 
+console.log({
+  schainEndpointSide,
+})
+
 // const schainEndpointSide = 'http://104.248.79.40:8057'
 // const schainID = 'UPPC7EI4'
 

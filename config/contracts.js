@@ -20,6 +20,10 @@ const networkProxyAddress = '0x04BcAD85888122F075b329861bd4e58139b4e932'
 //   networkProxyAddress
 // )
 
+console.log({
+  networkProxyAddress,
+})
+
 const getNetworkProxyContract = () => {
   const web3 = getWeb3(false)
   return new web3.eth.Contract(NetworkProxyMockAbi, networkProxyAddress)
