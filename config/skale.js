@@ -17,8 +17,8 @@ const awsControllerUrl = require('../management/awsControllerUrl')
 const schainEndpointMain =
   'https://rinkeby.infura.io/v3/4744851d37ac46bd95eddf0d50f062a4'
 
-// const schainEndpointSide = `http://${awsControllerUrl}:7545`
-const schainEndpointSide = 'http://localhost:7545'
+const schainEndpointSide = `http://${awsControllerUrl}:7545`
+// const schainEndpointSide = 'http://localhost:7545'
 
 // const schainEndpointSide = 'http://104.248.79.40:8057'
 // const schainID = 'UPPC7EI4'

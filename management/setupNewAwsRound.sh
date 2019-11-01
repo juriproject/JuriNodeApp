@@ -12,5 +12,3 @@ for ((index=1; index-1<20; ++index)); do
     ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${!HOST}" "cd JuriNodeApp && git pull"
 done
 echo 'Updating repos finished!'
-
-ssh -o StrictHostKeyChecking=no -i "../JuriNodes.pem" "ubuntu@${CONTROLLER_NODE}" "CONTROLLER_PUBLIC_KEY=$CONTROLLER_PUBLIC_KEY CONTROLLER_PRIVATE_KEY=$CONTROLLER_PRIVATE_KEY node JuriNodeApp/controllerNode/runInitialSetup.js"
