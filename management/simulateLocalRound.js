@@ -4,6 +4,7 @@ const path = require('path')
 const program = require('commander')
 const { Worker } = require('worker_threads')
 
+const runRemoteCommand = require('./lib/runRemoteCommand')
 const setupProxyForNewRound = require('../controllerNode/setupProxyForNewRound')
 
 const outputWriteStreams = []
@@ -81,30 +82,53 @@ const exec = async () => {
 
   outputWriteStreams.push(fs.createWriteStream(controllerLogFile))
 
-  runControllerRoundsService({
-    controllerAddress,
-    controllerKeyUint: controllerKeyBuffer,
-    isUploadingFiles,
-    maxUserCount: userCount,
-    maxRoundsCount: maxRounds,
-    timePerStage,
-  })
+  const awsDnsNames = fs.readFileSync('./awsDnsNames.env')
+  const hosts = String(awsDnsNames)
+    .split('\n')
+    .filter(line => line !== '')
+    .reduce((object, line) => {
+      const splitLine = line.split('=')
+      object[splitLine[0]] = splitLine[1]
+
+      return object
+    }, {})
+
+  if (isRunningOnAws)
+    runRemoteCommand({
+      host: hosts.CONTROLLER_NODE,
+      command: `node JuriNodeApp/scripts/runControllerNode.js --controller-address ${controllerAddress} --controller-key ${controllerKey} --time-per-stage ${timePerStage} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files`,
+    })
+  else
+    runControllerRoundsService({
+      controllerAddress,
+      controllerKeyUint: controllerKeyBuffer,
+      isUploadingFiles,
+      maxUserCount: userCount,
+      maxRoundsCount: maxRounds,
+      timePerStage,
+    })
 
   for (let nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
     outputWriteStreams.push(fs.createWriteStream(nodeLogFiles[nodeIndex]))
 
-    runJuriNodeRoundsService({
-      isDownloadingFiles: isUploadingFiles,
-      maxRoundsCount: maxRounds,
-      maxUserCount: userCount,
-      nodeIndex,
-      failureOptions: {
-        isNotRevealing: false,
-        isSendingIncorrectResult: false,
-        isOffline: false,
-        isSendingIncorrectDissent: nodeIndex === 3,
-      },
-    })
+    if (isRunningOnAws)
+      runRemoteCommand({
+        host: hosts[`NODE${nodeIndex + 1}`],
+        command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files`,
+      })
+    else
+      runJuriNodeRoundsService({
+        isDownloadingFiles: isUploadingFiles,
+        maxRoundsCount: maxRounds,
+        maxUserCount: userCount,
+        nodeIndex,
+        failureOptions: {
+          isNotRevealing: false,
+          isSendingIncorrectResult: false,
+          isOffline: false,
+          isSendingIncorrectDissent: nodeIndex === 3,
+        },
+      })
   }
 }
 

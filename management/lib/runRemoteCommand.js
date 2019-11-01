@@ -23,7 +23,10 @@ const runRemoteCommand = ({ host, command }) => {
               conn.end()
               resolve({ stdout, stderr, code, signal })
             })
-            .on('data', data => (stdout += data))
+            .on('data', data => {
+              console.log(String(data))
+              stdout += data
+            })
             .stderr.on('data', data => (stderr += data))
         })
       })

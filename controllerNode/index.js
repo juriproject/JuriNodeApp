@@ -148,6 +148,7 @@ const runControllerRound = async ({
 
 const runControllerRounds = async ({
   controllerAddress,
+  controllerKeyBuffer,
   controllerKeyUint,
   isUploadingFiles,
   maxUserCount,
@@ -155,7 +156,8 @@ const runControllerRounds = async ({
   parentPort,
   timePerStage,
 }) => {
-  const controllerKeyBuffer = Buffer.from(controllerKeyUint)
+  controllerKeyBuffer = controllerKeyBuffer || Buffer.from(controllerKeyUint)
+
   const NetworkProxyContract = getNetworkProxyContract()
   const web3 = getWeb3(false)
 
@@ -193,11 +195,5 @@ const runControllerRounds = async ({
     overwriteLogEnd('Moved to nodes adding commitments stage!')
   }
 }
-
-/* runControllerRounds({
-  isUploadingFiles: process.env.IS_UPLOADING_FILES === 'true',
-  maxRoundsCount: parseInt(process.env.MAX_ROUNDS_COUNT),
-  maxUserCount: parseInt(process.env.MAX_USER_COUNT),
-}) */
 
 module.exports = runControllerRounds

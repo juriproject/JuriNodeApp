@@ -49,9 +49,4 @@ const setupProxyForNewRound = async ({
   overwriteLogEnd('Moved to nodes adding commitments stage!')
 }
 
-/* setupProxyForNewRound({
-  isUploadingFiles: process.env.IS_UPLOADING_FILES === 'true',
-  maxUserCount: process.env.MAX_USER_COUNT,
-}) */
-
 module.exports = setupProxyForNewRound
