@@ -70,7 +70,7 @@ const runRound = async ({
       })
   )
 
-  /* postMessage({
+  /* parentPort.postMessage({
     nodeIndex,
     bondedStake: (await BondingContract.methods
       .getBondedStakeOfNode(allNodes[nodeIndex])

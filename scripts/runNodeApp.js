@@ -20,6 +20,7 @@ const exec = () => {
   const isUploadingFiles = program.isUploadingFiles !== undefined
 
   runNode({
+    parentPort: { postMessage: msg => console.log(msg) },
     isDownloadingFiles: isUploadingFiles,
     maxRoundsCount: maxRounds,
     maxUserCount: userCount,
@@ -28,7 +29,7 @@ const exec = () => {
       isNotRevealing: false,
       isSendingIncorrectResult: false,
       isOffline: false,
-      isSendingIncorrectDissent: nodeIndex === 3,
+      isSendingIncorrectDissent: false,
     },
   })
 }

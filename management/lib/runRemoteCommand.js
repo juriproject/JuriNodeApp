@@ -21,6 +21,8 @@ const runRemoteCommand = ({ host, command }) => {
           stream
             .on('close', (code, signal) => {
               conn.end()
+
+              console.log({ stdout, stderr, code, signal })
               resolve({ stdout, stderr, code, signal })
             })
             .on('data', data => {
