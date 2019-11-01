@@ -37,12 +37,13 @@ const exec = () => {
     userCount,
   } = program
 
+  const controllerKeyBuffer = Buffer.from(controllerKey.slice(2), 'hex')
   const isUploadingFiles = program.isUploadingFiles !== undefined
 
   runControllerNode({
     parentPort: { postMessage: msg => console.log(msg) },
     controllerAddress,
-    controllerKeyBuffer: Buffer.from(controllerKey),
+    controllerKeyBuffer,
     isUploadingFiles,
     maxUserCount: userCount,
     maxRoundsCount: maxRounds,
