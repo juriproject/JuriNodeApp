@@ -14,6 +14,8 @@ const downloadHeartRateDataFiles = async ({
       .getHeartRateDataStoragePath(roundIndex, userAddress)
       .call()
 
+    console.log({ isDownloadingFiles })
+
     const heartRateData = isDownloadingFiles
       ? (await getFilestorage().downloadToBuffer(storagePath)).toString('utf-8')
       : (parseInt(userAddress) > Math.pow(16, 40) / 2).toString()

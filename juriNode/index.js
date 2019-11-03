@@ -87,6 +87,11 @@ const runRound = async ({
     web3,
   })
 
+  console.log({
+    isDownloadingFiles,
+    Before: 'TRUE',
+  })
+
   const wasCompliantData = await verifyHeartRateData({
     assignedUsers,
     isDownloadingFiles,
@@ -94,6 +99,9 @@ const runRound = async ({
     parentPort,
     roundIndex,
   })
+
+  console.log('AFTER !!!!!!!!!!!!!!!!!')
+
   const complianceData = isSendingIncorrectResult
     ? wasCompliantData.map(({ wasCompliant }) => !wasCompliant)
     : wasCompliantData.map(({ wasCompliant }) => wasCompliant)
