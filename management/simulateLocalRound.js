@@ -118,7 +118,9 @@ const exec = async () => {
     if (isRunningOnAws)
       runRemoteCommand({
         host: hosts[`NODE${nodeIndex + 1}`],
-        command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files`,
+        command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} --user-count ${userCount} --max-rounds ${maxRounds} ${
+          isUploadingFiles ? '--is-downloading-files' : ''
+        }`,
       })
     else
       runJuriNodeRoundsService({

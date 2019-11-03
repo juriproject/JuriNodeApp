@@ -9,7 +9,7 @@ const exec = () => {
     .option('-u, --user-count <number>', 'user count', 4, Math.floor)
     .option('-m, --max-rounds <number>', 'max rounds count', 1, Math.floor)
     .option(
-      '-up, --is-uploading-files',
+      '-d, --is-downloading-files',
       'is uploading heart rate files to SKALE'
     )
 
@@ -17,11 +17,11 @@ const exec = () => {
 
   const { maxRounds, nodeIndex, userCount } = program
 
-  const isUploadingFiles = program.isUploadingFiles !== undefined
+  const isDownloadingFiles = program.isDownloadingFiles !== undefined
 
   runNode({
     parentPort: { postMessage: msg => console.log(msg) },
-    isDownloadingFiles: isUploadingFiles,
+    isDownloadingFiles,
     maxRoundsCount: maxRounds,
     maxUserCount: userCount,
     nodeIndex,
