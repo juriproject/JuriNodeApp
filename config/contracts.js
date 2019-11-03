@@ -12,7 +12,7 @@ const NetworkProxyMockAbi = require('../contracts/juri/JuriNetworkProxyMock')
   .abi
 const PoolAbi = require('../contracts/juri/JuriStakingPoolWithOracle').abi
 
-const networkProxyAddress = '0x04BcAD85888122F075b329861bd4e58139b4e932'
+const networkProxyAddress = '0x7C69868881Fb9844BbdAE6970D742C41b3F59719'
 // const networkProxyAddress = '0x306C9f5FA98C77DC4D092dCA945E5DF919a1519e'
 
 // const NetworkProxyContract = new web3.eth.Contract(
