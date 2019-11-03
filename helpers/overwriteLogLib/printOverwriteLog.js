@@ -4,6 +4,11 @@ const {
 } = require('./overwriteLogConstants')
 
 const printOverwriteLog = msg => {
+  if (typeof msg !== 'string') {
+    console.log(msg)
+    return
+  }
+
   const removedStartPrefixMsg = msg.startsWith(OVERWRITE_START_MSG)
     ? msg.substr(OVERWRITE_START_MSG.length) + '\n'
     : msg
