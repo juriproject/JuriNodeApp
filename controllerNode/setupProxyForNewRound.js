@@ -5,8 +5,8 @@ const {
 const { getWeb3 } = require('../config/skale')
 
 const addUserHeartRateFiles = require('./addUserHeartRateFiles')
-const overwriteLog = require('../helpers/overwriteLog')
-const overwriteLogEnd = require('../helpers/overwriteLogEnd')
+const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
 
 const setupProxyForNewRound = async ({

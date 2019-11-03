@@ -3,8 +3,8 @@ const sendCommitments = require('./sendCommitments')
 const sendReveals = require('./sendReveals')
 const waitForNextStage = require('./waitForNextStage')
 
-const overwriteLog = require('../helpers/overwriteLog')
-const overwriteLogEnd = require('../helpers/overwriteLogEnd')
+const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const Stages = require('../helpers/Stages')
 
 const runDissentRound = async ({

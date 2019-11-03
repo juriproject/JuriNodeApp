@@ -7,8 +7,8 @@ const { getFilestorage } = require('../config/testing')
 
 const { getWeb3 } = require('../config/skale')
 
-const overwriteLog = require('../helpers/overwriteLog')
-const overwriteLogEnd = require('../helpers/overwriteLogEnd')
+const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
 
 const addUserHeartRateFiles = async ({

@@ -1,8 +1,8 @@
 const { networkProxyAddress } = require('../config/contracts')
 
 const parseRevertMessage = require('../helpers/parseRevertMessage')
-const overwriteLog = require('../helpers/overwriteLog')
-const overwriteLogEnd = require('../helpers/overwriteLogEnd')
+const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
 
 const checkForInvalidAnswers = async ({

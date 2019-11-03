@@ -7,6 +7,11 @@ const { Worker } = require('worker_threads')
 const runRemoteCommand = require('./lib/runRemoteCommand')
 const setupProxyForNewRound = require('../controllerNode/setupProxyForNewRound')
 
+const {
+  OVERWRITE_START_MSG,
+  OVERWRITE_END_MSG,
+} = require('../helpers/overwriteLogLib/overwriteLogConstants')
+
 const outputWriteStreams = []
 
 nodeCleanup(async (_, signal) => {
@@ -156,26 +161,12 @@ const runRoundsService = ({ servicePath, workerData }) =>
     })
   })
 
-const OVERWRITE_START_MSG = 'OVERWRITE_START'
-const OVERWRITE_END_MSG = 'OVERWRITE_END'
-
 const parseMessage = ({ msg, nodeIndex, resolve }) => {
   if (msg === 'FINISHED') return resolve(msg)
 
   const streamIndex = nodeIndex === undefined ? 0 : nodeIndex + 1
 
   const modifiedMsg = typeof msg === 'string' ? msg : JSON.stringify(msg)
-
-  const removedStartPrefixMsg = modifiedMsg.startsWith(OVERWRITE_START_MSG)
-    ? modifiedMsg.substr(OVERWRITE_START_MSG.length) + '\n'
-    : modifiedMsg
-  const removedEndPrefixMsg = modifiedMsg.startsWith(OVERWRITE_END_MSG)
-    ? modifiedMsg.substr(OVERWRITE_END_MSG.length) + '\n'
-    : removedStartPrefixMsg
-
-  // printing immediately causes issues, see https://github.com/nodejs/help/issues/1876
-  // if (streamIndex === 0) console.log('CONTROLLER: ' + removedEndPrefixMsg)
-  // else if (streamIndex === 1) console.log('NODE: ' + removedEndPrefixMsg)
 
   if (modifiedMsg.startsWith(OVERWRITE_START_MSG)) {
     outputWriteStreams[streamIndex].write(

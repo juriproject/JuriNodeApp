@@ -6,8 +6,8 @@ const {
 } = require('../config/contracts')
 
 const addUserHeartRateFiles = require('./addUserHeartRateFiles')
-const overwriteLog = require('../helpers/overwriteLog')
-const overwriteLogEnd = require('../helpers/overwriteLogEnd')
+const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
 const sleep = require('../helpers/sleep')
 
@@ -170,6 +170,8 @@ const runControllerRounds = async ({
       timePerStage,
       web3,
     })
+
+    if (i + 1 === maxRoundsCount) break
 
     await sleep(timePerStage + 200)
 

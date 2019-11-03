@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const program = require('commander')
 
+const printOverwriteLog = require('../helpers/overwriteLogLib/printOverwriteLog')
 const runNode = require('../juriNode/')
 
 const exec = () => {
@@ -20,7 +21,7 @@ const exec = () => {
   const isDownloadingFiles = program.isDownloadingFiles !== undefined
 
   runNode({
-    parentPort: { postMessage: msg => console.log(msg) },
+    parentPort: { postMessage: msg => printOverwriteLog(msg) },
     isDownloadingFiles,
     maxRoundsCount: maxRounds,
     maxUserCount: userCount,

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const program = require('commander')
 
+const printOverwriteLog = require('../helpers/overwriteLogLib/printOverwriteLog')
 const runControllerNode = require('../controllerNode/')
 
 const exec = () => {
@@ -41,7 +42,7 @@ const exec = () => {
   const isUploadingFiles = program.isUploadingFiles !== undefined
 
   runControllerNode({
-    parentPort: { postMessage: msg => console.log(msg) },
+    parentPort: { postMessage: msg => printOverwriteLog(msg) },
     controllerAddress,
     controllerKeyBuffer,
     isUploadingFiles,

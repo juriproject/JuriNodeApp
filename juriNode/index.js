@@ -12,8 +12,8 @@ const { getWeb3 } = require('../config/skale')
 const { nodes } = require('../config/accounts')
 
 const filterAsync = require('../helpers/filterAsync')
-const overwriteLog = require('../helpers/overwriteLog')
-const overwriteLogEnd = require('../helpers/overwriteLogEnd')
+const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
+const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const parseRevertMessage = require('../helpers/parseRevertMessage')
 const Stages = require('../helpers/Stages')
 
