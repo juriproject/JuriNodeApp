@@ -1,6 +1,4 @@
-const {
-  OVERWRITE_END_MSG,
-} = require('../helpers/overwriteLogLib/overwriteLogConstants')
+const { OVERWRITE_END_MSG } = require('./overwriteLogConstants')
 
 const overwriteLogEnd = (msg, parentPort) => {
   if (parentPort) {

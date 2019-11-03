@@ -1,7 +1,7 @@
 const {
   OVERWRITE_START_MSG,
   OVERWRITE_END_MSG,
-} = require('../helpers/overwriteLogLib/overwriteLogConstants')
+} = require('../../helpers/overwriteLogLib/overwriteLogConstants')
 
 const parseMessage = ({ msg, outputWriteStream }) => {
   const modifiedMsg = typeof msg === 'string' ? msg : JSON.stringify(msg)
