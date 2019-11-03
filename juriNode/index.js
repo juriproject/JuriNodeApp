@@ -77,10 +77,6 @@ const runRound = async ({
       .call()).toString(),
   }) */
 
-  parentPort.postMessage({
-    web3,
-  })
-
   // STAGE 2
   const { assignedUsers, uniqUsers } = await retrieveAssignedUsers({
     maxUserCount,
