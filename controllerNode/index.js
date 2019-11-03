@@ -161,7 +161,7 @@ const runControllerRounds = async ({
   const NetworkProxyContract = getNetworkProxyContract()
   const web3 = getWeb3(false)
 
-  while (true) {
+  for (let i = 0; i < maxRoundsCount; i++) {
     await runControllerRound({
       controllerAddress,
       controllerKeyBuffer,
