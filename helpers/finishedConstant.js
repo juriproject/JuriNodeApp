@@ -1,0 +1,3 @@
+const FINISHED_CONSTANT = 'FINISHED'
+
+module.exports = FINISHED_CONSTANT

@@ -12,10 +12,10 @@ const { getWeb3 } = require('../config/skale')
 const { nodes } = require('../config/accounts')
 
 const filterAsync = require('../helpers/filterAsync')
+const FINISHED_CONSTANT = require('../helpers/finishedConstant')
 const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
 const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const parseRevertMessage = require('../helpers/parseRevertMessage')
-const Stages = require('../helpers/Stages')
 
 const checkForInvalidAnswers = require('./checkForInvalidAnswers')
 const getAssignedUsersIndexes = require('./getAssignedUsersIndexes')
@@ -381,6 +381,7 @@ const safeRunRounds = async params => {
       params.parentPort.postMessage(
         `Finished with simulated rounds (node ${params.nodeIndex})!`
       )
+      params.parentPort.postMessage(FINISHED_CONSTANT)
 
       return
     }

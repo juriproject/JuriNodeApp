@@ -2,15 +2,14 @@ const fs = require('fs')
 const nodeCleanup = require('node-cleanup')
 const path = require('path')
 const program = require('commander')
-const { Worker } = require('worker_threads')
 
 const runRemoteCommand = require('./lib/runRemoteCommand')
 const setupProxyForNewRound = require('../controllerNode/setupProxyForNewRound')
 
 const {
-  OVERWRITE_START_MSG,
-  OVERWRITE_END_MSG,
-} = require('../helpers/overwriteLogLib/overwriteLogConstants')
+  runJuriNodeRoundsService,
+  runControllerRoundsService,
+} = require('./workerService/roundServices')
 
 const outputWriteStreams = []
 
@@ -104,6 +103,7 @@ const exec = async () => {
 
   if (isRunningOnAws)
     runRemoteCommand({
+      outputWriteStream: outputWriteStreams[0],
       host: hosts.CONTROLLER_NODE,
       command: `node JuriNodeApp/scripts/runControllerNode.js --controller-address ${controllerAddress} --controller-key ${controllerKey} --time-per-stage ${timePerStage} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files`,
     })
@@ -114,6 +114,7 @@ const exec = async () => {
       isUploadingFiles,
       maxUserCount: userCount,
       maxRoundsCount: maxRounds,
+      outputWriteStream: outputWriteStreams[0],
       timePerStage,
     })
 
@@ -122,6 +123,7 @@ const exec = async () => {
 
     if (isRunningOnAws)
       runRemoteCommand({
+        outputWriteStream: outputWriteStreams[nodeIndex + 1],
         host: hosts[`NODE${nodeIndex + 1}`],
         command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} --user-count ${userCount} --max-rounds ${maxRounds} ${
           isUploadingFiles ? '--is-downloading-files' : ''
@@ -133,6 +135,7 @@ const exec = async () => {
         maxRoundsCount: maxRounds,
         maxUserCount: userCount,
         nodeIndex,
+        outputWriteStream: outputWriteStreams[nodeIndex + 1],
         failureOptions: {
           isNotRevealing: false,
           isSendingIncorrectResult: false,
@@ -141,52 +144,6 @@ const exec = async () => {
         },
       })
   }
-}
-
-const runJuriNodeRoundsService = workerData =>
-  runRoundsService({ servicePath: './juriNodeRoundsService.js', workerData })
-
-const runControllerRoundsService = workerData =>
-  runRoundsService({ servicePath: './controllerRoundsService.js', workerData })
-
-const runRoundsService = ({ servicePath, workerData }) =>
-  new Promise((resolve, reject) => {
-    const worker = new Worker(servicePath, { workerData })
-    worker.on('message', msg =>
-      parseMessage({ msg, nodeIndex: workerData.nodeIndex, resolve })
-    )
-    worker.on('error', reject)
-    worker.on('exit', code => {
-      if (code !== 0) reject(new Error(`Worker stopped with exit code ${code}`))
-    })
-  })
-
-const parseMessage = ({ msg, nodeIndex, resolve }) => {
-  if (msg === 'FINISHED') return resolve(msg)
-
-  const streamIndex = nodeIndex === undefined ? 0 : nodeIndex + 1
-
-  const modifiedMsg = typeof msg === 'string' ? msg : JSON.stringify(msg)
-
-  if (modifiedMsg.startsWith(OVERWRITE_START_MSG)) {
-    outputWriteStreams[streamIndex].write(
-      modifiedMsg.substr(OVERWRITE_START_MSG.length)
-    )
-    return
-  }
-
-  if (modifiedMsg.startsWith(OVERWRITE_END_MSG)) {
-    // readline.clearLine(outputWriteStreams[streamIndex], 0)
-    // readline.cursorTo(outputWriteStreams[streamIndex], 0)
-    // doesnt work :( requires tty stream
-
-    outputWriteStreams[streamIndex].write(
-      modifiedMsg.substr(OVERWRITE_END_MSG.length) + '\n'
-    )
-    return
-  }
-
-  outputWriteStreams[streamIndex].write(modifiedMsg + '\n')
 }
 
 exec()

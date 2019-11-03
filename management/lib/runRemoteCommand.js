@@ -2,11 +2,13 @@ const { Client } = require('ssh2')
 const fs = require('fs')
 const path = require('path')
 
+const parseMessage = require('./parseMessage')
+
 const privateKey = fs.readFileSync(
   path.resolve(__dirname, '../../JuriNodes.pem')
 )
 
-const runRemoteCommand = ({ host, command }) => {
+const runRemoteCommand = ({ host, command, outputWriteStream }) => {
   const conn = new Client()
 
   return new Promise((resolve, reject) => {
@@ -26,7 +28,7 @@ const runRemoteCommand = ({ host, command }) => {
               resolve({ stdout, stderr, code, signal })
             })
             .on('data', data => {
-              console.log(String(data))
+              parseMessage({ msg: String(data), resolve, outputWriteStream })
               stdout += data
             })
             .stderr.on('data', data => (stderr += data))

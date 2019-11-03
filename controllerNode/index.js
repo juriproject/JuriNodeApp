@@ -6,6 +6,7 @@ const {
 } = require('../config/contracts')
 
 const addUserHeartRateFiles = require('./addUserHeartRateFiles')
+const FINISHED_CONSTANT = require('../helpers/finishedConstant')
 const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
 const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const sendTx = require('../helpers/sendTx')
@@ -173,6 +174,7 @@ const runControllerRounds = async ({
 
     if (i + 1 === maxRoundsCount) {
       parentPort.postMessage('Simulated rounds finished!')
+      parentPort.postMessage(FINISHED_CONSTANT)
 
       return
     }
