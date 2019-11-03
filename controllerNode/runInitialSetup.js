@@ -14,7 +14,7 @@ const { getWeb3 } = require('../config/skale')
 const { controllerNode, nodes, users } = require('../config/accounts')
 
 const sendTx = require('../helpers/sendTx')
-const overwriteLog = require('../helpers/overwriteLog')
+const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
 
 const runInitialSetup = async ({
   bondingAddress,
