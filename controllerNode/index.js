@@ -171,6 +171,13 @@ const runControllerRounds = async ({
       web3,
     })
 
+    console.log({
+      i,
+      maxRoundsCount,
+      typeOfI: typeof i,
+      typeOfMaxRoundsCount: typeof maxRoundsCount,
+    })
+
     if (i + 1 === maxRoundsCount) {
       parentPort.postMessage('Simulated rounds finished!')
 
