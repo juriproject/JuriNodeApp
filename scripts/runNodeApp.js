@@ -23,8 +23,8 @@ const exec = () => {
   runNode({
     parentPort: { postMessage: msg => printOverwriteLog(msg) },
     isDownloadingFiles,
-    maxRoundsCount: maxRounds,
-    maxUserCount: userCount,
+    maxUserCount: parseInt(userCount),
+    maxRoundsCount: parseInt(maxRounds),
     nodeIndex,
     failureOptions: {
       isNotRevealing: false,

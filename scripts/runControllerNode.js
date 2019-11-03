@@ -46,9 +46,9 @@ const exec = () => {
     controllerAddress,
     controllerKeyBuffer,
     isUploadingFiles,
-    maxUserCount: userCount,
-    maxRoundsCount: maxRounds,
-    timePerStage,
+    maxUserCount: parseInt(userCount),
+    maxRoundsCount: parseInt(maxRounds),
+    timePerStage: parseInt(timePerStage),
   })
 }
 
