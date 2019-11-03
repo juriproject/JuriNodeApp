@@ -161,7 +161,7 @@ const runControllerRounds = async ({
   const NetworkProxyContract = getNetworkProxyContract()
   const web3 = getWeb3(false)
 
-  for (let i = 0; i < maxRoundsCount; i++) {
+  while (true) {
     await runControllerRound({
       controllerAddress,
       controllerKeyBuffer,
@@ -171,7 +171,11 @@ const runControllerRounds = async ({
       web3,
     })
 
-    if (i + 1 === maxRoundsCount) break
+    if (i + 1 === maxRoundsCount) {
+      parentPort.postMessage('Simulated rounds finished!')
+
+      return
+    }
 
     await sleep(timePerStage + 200)
 

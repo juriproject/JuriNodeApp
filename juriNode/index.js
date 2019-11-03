@@ -278,9 +278,6 @@ const runRound = async ({
   })
   overwriteLogEnd(`Dishonest nodes slashed (node ${nodeIndex})!`, parentPort)
 
-  const currentStage0 = await NetworkProxyContract.methods.currentStage().call()
-  overwriteLogEnd(`Current Stage = ${Stages[currentStage0]}`, parentPort)
-
   // STAGE 7
   await moveToNextRound({
     myJuriNodeAddress,
@@ -347,7 +344,7 @@ const safeRunRounds = async params => {
   const JuriTokenContract = await getJuriTokenContract()
   const JuriFeesTokenContract = await getJuriFeesTokenContract()
 
-  for (let i = 0; i < params.maxRoundsCount; i++) {
+  while (true) {
     const roundIndex = parseInt(
       await NetworkProxyContract.methods.roundIndex().call()
     )
@@ -371,7 +368,8 @@ const safeRunRounds = async params => {
         web3,
       })
     } catch (error) {
-      console.log({ error })
+      params.parentPort.postMessage({ error }) // for debugging
+
       params.parentPort.postMessage({ nodeIndex: params.nodeIndex, error })
       params.parentPort.postMessage({
         nodeIndex: params.nodeIndex,
@@ -379,6 +377,12 @@ const safeRunRounds = async params => {
           ? parseRevertMessage(error.message)
           : error.message,
       })
+    }
+
+    if (i + 1 === params.maxRoundsCount) {
+      params.parentPort.postMessage('Simulated rounds finished!')
+
+      return
     }
 
     await waitForNextRound({
