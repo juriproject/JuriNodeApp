@@ -11,7 +11,7 @@ SKALE Private Net Endpoint 2: http://165.22.133.157:10101
 
 const Tx = require('ethereumjs-tx')
 
-const awsControllerUrl = require('../management/awsControllerUrl')
+const awsControllerUrl = require('./awsControllerUrl')
 
 // const schainEndpointMain = 'http://134.209.56.46:1919'
 const schainEndpointMain =

@@ -1,3 +1,8 @@
+/* const accounts = new Array(14)
+    .fill(0)
+    .map((_, i) => web3.eth.accounts.create(`${Date.now().toString()}${i}`))
+    .map(({ address, privateKey }) => ({ address, privateKey })) */
+
 const nodes = [
   {
     address: '0x609090313b64c65e968162288E619c39D03a69c6',
@@ -210,15 +215,4 @@ const users = [
   privateKeyBuffer: Buffer.from(account.privateKey.slice(2), 'hex'),
 }))
 
-const controllerNode = process.env.CONTROLLER_PUBLIC_KEY
-  ? {
-      address: process.env.CONTROLLER_PUBLIC_KEY,
-      privateKey: process.env.CONTROLLER_PRIVATE_KEY,
-      privateKeyBuffer: Buffer.from(
-        process.env.CONTROLLER_PRIVATE_KEY.slice(2),
-        'hex'
-      ),
-    }
-  : undefined
-
-module.exports = { controllerNode, nodes, users }
+module.exports = { nodes, users }

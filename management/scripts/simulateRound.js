@@ -1,15 +1,17 @@
+#!/usr/bin/env node
+
 const fs = require('fs')
 const nodeCleanup = require('node-cleanup')
 const path = require('path')
 const program = require('commander')
 
-const runRemoteCommand = require('./lib/runRemoteCommand')
-const setupProxyForNewRound = require('../controllerNode/setupProxyForNewRound')
+const runRemoteCommand = require('../lib/runRemoteCommand')
+const setupProxyForNewRound = require('../../controllerNode/setupProxyForNewRound')
 
 const {
   runJuriNodeRoundsService,
   runControllerRoundsService,
-} = require('./workerService/roundServices')
+} = require('../workerService/roundServices')
 
 const outputWriteStreams = []
 

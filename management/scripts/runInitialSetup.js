@@ -1,3 +1,7 @@
+#!/usr/bin/env node
+
+const program = require('commander')
+
 const {
   getBondingAddress,
   getBondingContract,
@@ -7,30 +11,30 @@ const {
   getJuriTokenContract,
   networkProxyAddress,
   getNetworkProxyContract,
-} = require('../config/contracts')
+} = require('../../config/contracts')
 
-const { getWeb3 } = require('../config/skale')
+const { getWeb3 } = require('../../config/skale')
 
-const { controllerNode, nodes, users } = require('../config/accounts')
+const { nodes, users } = require('../../config/accounts')
 
-const sendTx = require('../helpers/sendTx')
-const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
+const sendTx = require('../../helpers/sendTx')
+const overwriteLog = require('../../helpers/overwriteLogLib/overwriteLog')
 
 const runInitialSetup = async ({
   bondingAddress,
   BondingContract,
+  controllerAddress,
+  controllerKeyBuffer,
   juriTokenAddress,
   JuriTokenContract,
   NetworkProxyContract,
-  originalAccount,
-  originalPrivateKey,
   web3,
 }) => {
   const oneEther = new web3.utils.BN('1000000000000000000')
   const Ether1e17 = new web3.utils.BN('100000000000000000')
 
   const nonceOriginalAccount1 = await web3.eth.getTransactionCount(
-    originalAccount
+    controllerAddress
   )
 
   for (let i = 0; i < nodes.length; i++) {
@@ -39,10 +43,10 @@ const runInitialSetup = async ({
     overwriteLog(`Send 0.1 Eth to node ${i}...`)
     await sendTx({
       data: 0x0,
-      from: originalAccount,
+      from: controllerAddress,
       nonce: nonceOriginalAccount1 + i,
       to: node.address,
-      privateKey: originalPrivateKey,
+      privateKey: controllerKeyBuffer,
       value: Ether1e17,
       web3,
     })
@@ -52,7 +56,7 @@ const runInitialSetup = async ({
   process.stdout.write('\n')
 
   const nonceOriginalAccount2 = await web3.eth.getTransactionCount(
-    originalAccount
+    controllerAddress
   )
 
   for (let i = 0; i < users.length; i++) {
@@ -62,10 +66,10 @@ const runInitialSetup = async ({
 
     await sendTx({
       data: 0x0,
-      from: originalAccount,
+      from: controllerAddress,
       nonce: nonceOriginalAccount2 + i,
       to: user.address,
-      privateKey: originalPrivateKey,
+      privateKey: controllerKeyBuffer,
       value: Ether1e17,
       web3,
     })
@@ -75,7 +79,7 @@ const runInitialSetup = async ({
   process.stdout.write('\n')
 
   const nonceOriginalAccount3 = await web3.eth.getTransactionCount(
-    originalAccount
+    controllerAddress
   )
 
   for (let i = 0; i < nodes.length; i++) {
@@ -89,10 +93,10 @@ const runInitialSetup = async ({
       data: JuriTokenContract.methods
         .mint(node.address, tenThousandEther.toString())
         .encodeABI(),
-      from: originalAccount,
+      from: controllerAddress,
       nonce: nonceOriginalAccount3 + i,
       to: juriTokenAddress,
-      privateKey: originalPrivateKey,
+      privateKey: controllerKeyBuffer,
       web3,
     })
 
@@ -127,9 +131,9 @@ const runInitialSetup = async ({
   overwriteLog('Moving to next round...')
   await sendTx({
     data: NetworkProxyContract.methods.debugIncreaseRoundIndex().encodeABI(),
-    from: originalAccount,
+    from: controllerAddress,
     to: networkProxyAddress,
-    privateKey: originalPrivateKey,
+    privateKey: controllerKeyBuffer,
     web3,
   })
   overwriteLog(`Moved to next round!`)
@@ -137,34 +141,41 @@ const runInitialSetup = async ({
 }
 
 const exec = async () => {
-  const isRunningOnAws = process.env.IS_RUNNING_ON_AWS === 'true'
+  program
+    .option(
+      '-a, --controller-address <address>',
+      'public key of controller',
+      '0x350c1088a07AfFCe586695A6a4500F261e68c350'
+    )
+    .option(
+      '-k, --controller-key <key>',
+      'private key of controller',
+      '0x3D8C59826606D403E2914C75362A2BCD7B5EC7CC2FFDCD2B2F57959549F5B934'
+    )
+    .option('-r, --is-running-on-aws', 'is running on remote AWS machines')
 
-  const originalAccount = controllerNode.address
-  const originalPrivateKey = controllerNode.privateKeyBuffer
+  program.parse(process.argv)
 
+  const { controllerAddress, controllerKey } = program
+  const isRunningOnAws = program.isRunningOnAws !== undefined
+
+  const controllerKeyBuffer = Buffer.from(controllerKey.slice(2), 'hex')
   const NetworkProxyContract = getNetworkProxyContract(isRunningOnAws)
   const web3 = getWeb3({ isMain: false, isRunningOnAws })
 
   const bondingAddress = await getBondingAddress(isRunningOnAws)
   const BondingContract = await getBondingContract(isRunningOnAws)
-  // const juriFeesTokenAdress = await getJuriFeesTokenAddress()
-  // const JuriFeesTokenContract = await getJuriFeesTokenContract()
   const juriTokenAddress = await getJuriTokenAddress(isRunningOnAws)
   const JuriTokenContract = await getJuriTokenContract(isRunningOnAws)
-
-  /* const accounts = new Array(14)
-    .fill(0)
-    .map((_, i) => web3.eth.accounts.create(`${Date.now().toString()}${i}`))
-    .map(({ address, privateKey }) => ({ address, privateKey })) */
 
   await runInitialSetup({
     bondingAddress,
     BondingContract,
+    controllerAddress,
+    controllerKeyBuffer,
     juriTokenAddress,
     JuriTokenContract,
     NetworkProxyContract,
-    originalAccount,
-    originalPrivateKey,
     web3,
   })
 }

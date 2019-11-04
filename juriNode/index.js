@@ -338,21 +338,13 @@ const runRound = async ({
 const safeRunRounds = async params => {
   const { isRunningOnAws, maxRoundsCount, nodeIndex, parentPort } = params
 
-  parentPort.postMessage('AAAAAAAAAA')
-
   const web3 = getWeb3({ isMain: false, isRunningOnAws })
-  parentPort.postMessage('BBBBBBBBBBB')
-
   const NetworkProxyContract = await getNetworkProxyContract(isRunningOnAws)
   const bondingAddress = await getBondingAddress(isRunningOnAws)
   const BondingContract = await getBondingContract(isRunningOnAws)
-  parentPort.postMessage('CCCCCCCCCC')
-
   const juriTokenAddress = await getJuriTokenAddress(isRunningOnAws)
   const JuriTokenContract = await getJuriTokenContract(isRunningOnAws)
   const JuriFeesTokenContract = await getJuriFeesTokenContract(isRunningOnAws)
-
-  parentPort.postMessage('DDDDDDDDDD')
 
   for (let i = 0; i < maxRoundsCount; i++) {
     const roundIndex = parseInt(

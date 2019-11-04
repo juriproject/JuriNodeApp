@@ -2,10 +2,6 @@
   "name": "jurinodeapp",
   "version": "0.0.1",
   "description": "Server nodejs application for Juri nodes participating in analyzing user data in a decentralized manner",
-  "main": "index.js",
-  "scripts": {
-    "test": "npm run test"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/juriproject/JuriNodeApp.git"
