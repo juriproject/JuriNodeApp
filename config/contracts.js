@@ -12,9 +12,7 @@ const NetworkProxyMockAbi = require('../contracts/juri/JuriNetworkProxyMock')
   .abi
 const PoolAbi = require('../contracts/juri/JuriStakingPoolWithOracle').abi
 
-const {
-  networkProxyAddress,
-} = require('../../JuriOracle/migrations/data/deployed')
+const { networkProxyAddress } = require('./lastDeployedNetworkProxyAddress')
 
 const getNetworkProxyContract = isRunningOnAws => {
   const web3 = getWeb3({ isMain: false, isRunningOnAws })
