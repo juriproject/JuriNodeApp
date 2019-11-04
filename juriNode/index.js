@@ -338,6 +338,8 @@ const runRound = async ({
 const safeRunRounds = async params => {
   const { isRunningOnAws, maxRoundsCount, nodeIndex, parentPort } = params
 
+  console.log({ isRunningOnAws })
+
   const web3 = getWeb3({ isMain: false, isRunningOnAws })
   const NetworkProxyContract = await getNetworkProxyContract(isRunningOnAws)
   const bondingAddress = await getBondingAddress(isRunningOnAws)
