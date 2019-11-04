@@ -22,11 +22,6 @@ const exec = () => {
   const isDownloadingFiles = program.isDownloadingFiles !== undefined
   const isRunningOnAws = program.isRunningOnAws !== undefined
 
-  console.log({
-    isRunningOnAws,
-    script: 'script',
-  })
-
   runNode({
     parentPort: { postMessage: msg => printOverwriteLog(msg) },
     isDownloadingFiles,

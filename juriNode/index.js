@@ -77,6 +77,8 @@ const runRound = async ({
       .call()).toString(),
   }) */
 
+  parentPort.postMessage('AAAAAAAAAAAAAAAAA')
+
   // STAGE 2
   const { assignedUsers, uniqUsers } = await retrieveAssignedUsers({
     maxUserCount,
@@ -87,6 +89,8 @@ const runRound = async ({
     web3,
   })
 
+  parentPort.postMessage('BBBBBBBBBBBBBBBBB')
+
   const wasCompliantData = await verifyHeartRateData({
     assignedUsers,
     isDownloadingFiles,
@@ -94,6 +98,8 @@ const runRound = async ({
     parentPort,
     roundIndex,
   })
+
+  parentPort.postMessage('CCCCCCCCCCCCCCCCCC')
 
   const complianceData = isSendingIncorrectResult
     ? wasCompliantData.map(({ wasCompliant }) => !wasCompliant)
@@ -337,8 +343,6 @@ const runRound = async ({
 
 const safeRunRounds = async params => {
   const { isRunningOnAws, maxRoundsCount, nodeIndex, parentPort } = params
-
-  console.log({ isRunningOnAws })
 
   const web3 = getWeb3({ isMain: false, isRunningOnAws })
   const NetworkProxyContract = await getNetworkProxyContract(isRunningOnAws)
