@@ -66,7 +66,7 @@ const getJuriFeesTokenContract = async isRunningOnAws => {
   const web3 = getWeb3({ isMain: false, isRunningOnAws })
   return new web3.eth.Contract(
     ERC20MintableAbi,
-    await getJuriFeesTokenAddress()
+    await getJuriFeesTokenAddress(isRunningOnAws)
   )
 }
 
