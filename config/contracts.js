@@ -53,7 +53,7 @@ const getJuriTokenContract = async isRunningOnAws => {
   )
 }
 
-const getJuriFeesTokenAddress = async () => {
+const getJuriFeesTokenAddress = async isRunningOnAws => {
   if (juriFeesTokenAddress) return juriFeesTokenAddress
 
   juriFeesTokenAddress = await getNetworkProxyContract(isRunningOnAws)
