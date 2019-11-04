@@ -15,10 +15,11 @@ const addUserHeartRateFiles = async ({
   controllerAddress,
   controllerKeyBuffer,
   isUploadingFiles,
+  isRunningOnAws,
   maxUserCount,
   parentPort,
 }) => {
-  const web3 = getWeb3(false)
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
   const NetworkProxyContract = getNetworkProxyContract()
 
   overwriteLog('Moving to users adding heart rate data stage...', parentPort)

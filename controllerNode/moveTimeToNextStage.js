@@ -5,8 +5,8 @@ const {
 const { getWeb3 } = require('../config/skale')
 const sendTx = require('../helpers/sendTx')
 
-const moveToNextStage = async ({ from, key }) => {
-  const web3 = getWeb3(false)
+const moveTimeToNextStage = async ({ from, key, isRunningOnAws }) => {
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
   const NetworkProxyContract = getNetworkProxyContract()
 
   await sendTx({
@@ -18,4 +18,4 @@ const moveToNextStage = async ({ from, key }) => {
   })
 }
 
-module.exports = moveToNextStage
+module.exports = moveTimeToNextStage

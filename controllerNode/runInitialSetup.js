@@ -137,18 +137,20 @@ const runInitialSetup = async ({
 }
 
 const exec = async () => {
+  const isRunningOnAws = process.env.IS_RUNNING_ON_AWS === 'true'
+
   const originalAccount = controllerNode.address
   const originalPrivateKey = controllerNode.privateKeyBuffer
 
-  const NetworkProxyContract = getNetworkProxyContract()
-  const web3 = getWeb3(false)
+  const NetworkProxyContract = getNetworkProxyContract(isRunningOnAws)
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
 
-  const bondingAddress = await getBondingAddress()
-  const BondingContract = await getBondingContract()
+  const bondingAddress = await getBondingAddress(isRunningOnAws)
+  const BondingContract = await getBondingContract(isRunningOnAws)
   // const juriFeesTokenAdress = await getJuriFeesTokenAddress()
   // const JuriFeesTokenContract = await getJuriFeesTokenContract()
-  const juriTokenAddress = await getJuriTokenAddress()
-  const JuriTokenContract = await getJuriTokenContract()
+  const juriTokenAddress = await getJuriTokenAddress(isRunningOnAws)
+  const JuriTokenContract = await getJuriTokenContract(isRunningOnAws)
 
   /* const accounts = new Array(14)
     .fill(0)

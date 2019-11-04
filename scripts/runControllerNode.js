@@ -27,6 +27,7 @@ const exec = () => {
       '-up, --is-uploading-files',
       'is uploading heart rate files to SKALE'
     )
+    .option('-r, --is-running-on-aws', 'is running on remote AWS machines')
 
   program.parse(process.argv)
 
@@ -40,12 +41,14 @@ const exec = () => {
 
   const controllerKeyBuffer = Buffer.from(controllerKey.slice(2), 'hex')
   const isUploadingFiles = program.isUploadingFiles !== undefined
+  const isRunningOnAws = program.isRunningOnAws !== undefined
 
   runControllerNode({
     parentPort: { postMessage: msg => printOverwriteLog(msg) },
     controllerAddress,
     controllerKeyBuffer,
     isUploadingFiles,
+    isRunningOnAws,
     maxUserCount: parseInt(userCount),
     maxRoundsCount: parseInt(maxRounds),
     timePerStage: parseInt(timePerStage),

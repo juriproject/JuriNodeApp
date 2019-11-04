@@ -8,6 +8,7 @@ const retrieveRewards = async ({
   myJuriNodeAddress,
   myJuriNodePrivateKey,
   NetworkProxyContract,
+  parentPort,
   roundIndex,
   web3,
 }) => {
@@ -39,7 +40,7 @@ const retrieveRewards = async ({
     web3,
   })
 
-  console.log({
+  parentPort.postMessage({
     roundIndex: roundIndex.toString(),
     totalJuriFeesInProxyAfter: (await NetworkProxyContract.methods
       .totalJuriFees(roundIndex)

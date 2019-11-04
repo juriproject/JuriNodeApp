@@ -85,6 +85,7 @@ const exec = async () => {
     controllerAddress,
     controllerKeyBuffer,
     isUploadingFiles,
+    isRunningOnAws,
     maxUserCount: userCount,
   })
 
@@ -105,17 +106,22 @@ const exec = async () => {
     runRemoteCommand({
       outputWriteStream: outputWriteStreams[0],
       host: hosts.CONTROLLER_NODE,
-      command: `node JuriNodeApp/scripts/runControllerNode.js --controller-address ${controllerAddress} --controller-key ${controllerKey} --time-per-stage ${timePerStage} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files`,
+      command: `node JuriNodeApp/scripts/runControllerNode.js --controller-address ${controllerAddress} --controller-key ${controllerKey} --time-per-stage ${timePerStage} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files ${
+        isRunningOnAws ? '--is-running-on-aws' : ''
+      }`,
     })
   else
     runControllerRoundsService({
-      controllerAddress,
-      controllerKeyUint: controllerKeyBuffer,
-      isUploadingFiles,
-      maxUserCount: userCount,
-      maxRoundsCount: maxRounds,
       outputWriteStream: outputWriteStreams[0],
-      timePerStage,
+      workerData: {
+        controllerAddress,
+        controllerKeyUint: controllerKeyBuffer,
+        isRunningOnAws,
+        isUploadingFiles,
+        maxUserCount: parseInt(userCount),
+        maxRoundsCount: parseInt(maxRounds),
+        timePerStage: parseInt(timePerStage),
+      },
     })
 
   for (let nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
@@ -127,20 +133,23 @@ const exec = async () => {
         host: hosts[`NODE${nodeIndex + 1}`],
         command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} --user-count ${userCount} --max-rounds ${maxRounds} ${
           isUploadingFiles ? '--is-downloading-files' : ''
-        }`,
+        } ${isRunningOnAws ? '--is-running-on-aws' : ''}`,
       })
     else
       runJuriNodeRoundsService({
-        isDownloadingFiles: isUploadingFiles,
-        maxRoundsCount: maxRounds,
-        maxUserCount: userCount,
-        nodeIndex,
         outputWriteStream: outputWriteStreams[nodeIndex + 1],
-        failureOptions: {
-          isNotRevealing: false,
-          isSendingIncorrectResult: false,
-          isOffline: false,
-          isSendingIncorrectDissent: nodeIndex === 3,
+        workerData: {
+          isDownloadingFiles: isUploadingFiles,
+          isRunningOnAws,
+          maxRoundsCount: parseInt(maxRounds),
+          maxUserCount: parseInt(userCount),
+          nodeIndex,
+          failureOptions: {
+            isNotRevealing: false,
+            isSendingIncorrectResult: false,
+            isOffline: false,
+            isSendingIncorrectDissent: false, // nodeIndex === 3,
+          },
         },
       })
   }

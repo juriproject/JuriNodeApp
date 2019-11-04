@@ -21,6 +21,7 @@ const Stages = require('../helpers/Stages')
 const moveTimeForNextStages = async ({
   controllerAddress,
   controllerKeyBuffer,
+  isRunningOnAws,
   NetworkProxyContract,
   parentPort,
   stageCount,
@@ -37,6 +38,7 @@ const moveTimeForNextStages = async ({
     await moveTimeToNextStage({
       from: controllerAddress,
       key: controllerKeyBuffer,
+      isRunningOnAws,
     })
     overwriteLogEnd(`Moved stage!`, parentPort)
   }
@@ -45,6 +47,7 @@ const moveTimeForNextStages = async ({
 const runControllerRound = async ({
   controllerAddress,
   controllerKeyBuffer,
+  isRunningOnAws,
   NetworkProxyContract,
   parentPort,
   timePerStage,
@@ -55,6 +58,7 @@ const runControllerRound = async ({
   await moveTimeForNextStages({
     controllerAddress,
     controllerKeyBuffer,
+    isRunningOnAws,
     NetworkProxyContract,
     parentPort,
     timePerStage,
@@ -81,8 +85,10 @@ const runControllerRound = async ({
   }
 
   const juriFees = 100
-  const JuriStakingPoolContracts = await getJuriStakingPoolContracts()
-  const JuriTokenFeesContract = await getJuriFeesTokenContract()
+  const JuriStakingPoolContracts = await getJuriStakingPoolContracts(
+    isRunningOnAws
+  )
+  const JuriTokenFeesContract = await getJuriFeesTokenContract(isRunningOnAws)
 
   parentPort.postMessage({
     roundIndex: roundIndex.toString(),
@@ -152,6 +158,7 @@ const runControllerRounds = async ({
   controllerKeyBuffer,
   controllerKeyUint,
   isUploadingFiles,
+  isRunningOnAws,
   maxUserCount,
   maxRoundsCount,
   parentPort,
@@ -160,12 +167,13 @@ const runControllerRounds = async ({
   controllerKeyBuffer = controllerKeyBuffer || Buffer.from(controllerKeyUint)
 
   const NetworkProxyContract = getNetworkProxyContract()
-  const web3 = getWeb3(false)
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
 
   for (let i = 0; i < maxRoundsCount; i++) {
     await runControllerRound({
       controllerAddress,
       controllerKeyBuffer,
+      isRunningOnAws,
       NetworkProxyContract,
       parentPort,
       timePerStage,
@@ -185,6 +193,7 @@ const runControllerRounds = async ({
       controllerAddress,
       controllerKeyBuffer,
       isUploadingFiles,
+      isRunningOnAws,
       maxUserCount,
       parentPort,
     })

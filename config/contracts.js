@@ -12,45 +12,47 @@ const NetworkProxyMockAbi = require('../contracts/juri/JuriNetworkProxyMock')
   .abi
 const PoolAbi = require('../contracts/juri/JuriStakingPoolWithOracle').abi
 
-const networkProxyAddress = '0x7C69868881Fb9844BbdAE6970D742C41b3F59719'
-// const networkProxyAddress = '0x306C9f5FA98C77DC4D092dCA945E5DF919a1519e'
+const {
+  networkProxyAddress,
+} = require('../../JuriOracle/migrations/data/deployed')
 
-// const NetworkProxyContract = new web3.eth.Contract(
-//   NetworkProxyMockAbi,
-//   networkProxyAddress
-// )
-
-const getNetworkProxyContract = () => {
-  const web3 = getWeb3(false)
+const getNetworkProxyContract = isRunningOnAws => {
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
   return new web3.eth.Contract(NetworkProxyMockAbi, networkProxyAddress)
 }
 
-const getBondingAddress = async () => {
+const getBondingAddress = async isRunningOnAws => {
   if (bondingAddress) return bondingAddress
-  bondingAddress = await getNetworkProxyContract()
+  bondingAddress = await getNetworkProxyContract(isRunningOnAws)
     .methods.bonding()
     .call()
 
   return bondingAddress
 }
 
-const getBondingContract = async () => {
-  const web3 = getWeb3(false)
-  return new web3.eth.Contract(BondingAbi, await getBondingAddress())
+const getBondingContract = async isRunningOnAws => {
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
+  return new web3.eth.Contract(
+    BondingAbi,
+    await getBondingAddress(isRunningOnAws)
+  )
 }
 
-const getJuriTokenAddress = async () => {
+const getJuriTokenAddress = async isRunningOnAws => {
   if (juriTokenAddress) return juriTokenAddress
 
-  const BondingContract = await getBondingContract()
+  const BondingContract = await getBondingContract(isRunningOnAws)
   juriTokenAddress = await BondingContract.methods.token().call()
 
   return juriTokenAddress
 }
 
-const getJuriTokenContract = async () => {
-  const web3 = getWeb3(false)
-  return new web3.eth.Contract(JuriTokenAbi, await getJuriTokenAddress())
+const getJuriTokenContract = async isRunningOnAws => {
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
+  return new web3.eth.Contract(
+    JuriTokenAbi,
+    await getJuriTokenAddress(isRunningOnAws)
+  )
 }
 
 const getJuriFeesTokenAddress = async () => {
@@ -62,16 +64,16 @@ const getJuriFeesTokenAddress = async () => {
   return juriFeesTokenAddress
 }
 
-const getJuriFeesTokenContract = async () => {
-  const web3 = getWeb3(false)
+const getJuriFeesTokenContract = async isRunningOnAws => {
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
   return new web3.eth.Contract(
     ERC20MintableAbi,
     await getJuriFeesTokenAddress()
   )
 }
 
-const getJuriStakingPoolContracts = async () => {
-  const web3 = getWeb3(false)
+const getJuriStakingPoolContracts = async isRunningOnAws => {
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
   const poolAddresses = await getNetworkProxyContract()
     .methods.getRegisteredJuriStakingPools()
     .call()
@@ -92,7 +94,6 @@ module.exports = {
   getJuriStakingPoolContracts,
   JuriStakingPoolWithOracleMockAbi,
   networkProxyAddress,
-  // NetworkProxyContract,
   getNetworkProxyContract,
   PoolAbi,
 }

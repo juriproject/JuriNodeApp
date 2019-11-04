@@ -1,3 +1,4 @@
+const path = require('path')
 const { Worker } = require('worker_threads')
 
 const parseMessage = require('../lib/parseMessage')
@@ -7,14 +8,14 @@ const FINISHED_CONSTANT = require('../../helpers/finishedConstant')
 const runJuriNodeRoundsService = ({ outputWriteStream, workerData }) =>
   runRoundsService({
     outputWriteStream,
-    servicePath: './juriNodeRoundsService.js',
+    servicePath: path.resolve(__dirname, './juriNodeRoundsService.js'),
     workerData,
   })
 
 const runControllerRoundsService = ({ outputWriteStream, workerData }) =>
   runRoundsService({
     outputWriteStream,
-    servicePath: './controllerRoundsService.js',
+    servicePath: path.resolve(__dirname, './controllerRoundsService.js'),
     workerData,
   })
 

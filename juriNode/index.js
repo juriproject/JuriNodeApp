@@ -336,21 +336,23 @@ const runRound = async ({
 }
 
 const safeRunRounds = async params => {
-  const web3 = getWeb3(false)
-  const NetworkProxyContract = await getNetworkProxyContract()
-  const bondingAddress = await getBondingAddress()
-  const BondingContract = await getBondingContract()
-  const juriTokenAddress = await getJuriTokenAddress()
-  const JuriTokenContract = await getJuriTokenContract()
-  const JuriFeesTokenContract = await getJuriFeesTokenContract()
+  const { isRunningOnAws, maxRoundsCount, nodeIndex, parentPort } = params
 
-  for (let i = 0; i < params.maxRoundsCount; i++) {
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
+  const NetworkProxyContract = await getNetworkProxyContract(isRunningOnAws)
+  const bondingAddress = await getBondingAddress(isRunningOnAws)
+  const BondingContract = await getBondingContract(isRunningOnAws)
+  const juriTokenAddress = await getJuriTokenAddress(isRunningOnAws)
+  const JuriTokenContract = await getJuriTokenContract(isRunningOnAws)
+  const JuriFeesTokenContract = await getJuriFeesTokenContract(isRunningOnAws)
+
+  for (let i = 0; i < maxRoundsCount; i++) {
     const roundIndex = parseInt(
       await NetworkProxyContract.methods.roundIndex().call()
     )
     const allNodes = await BondingContract.methods.getAllStakingNodes().call()
 
-    const { address, privateKeyBuffer } = nodes[params.nodeIndex]
+    const { address, privateKeyBuffer } = nodes[nodeIndex]
 
     try {
       await runRound({
@@ -368,27 +370,27 @@ const safeRunRounds = async params => {
         web3,
       })
     } catch (error) {
-      params.parentPort.postMessage({ nodeIndex: params.nodeIndex, error })
-      params.parentPort.postMessage({
-        nodeIndex: params.nodeIndex,
+      parentPort.postMessage({ nodeIndex, error })
+      parentPort.postMessage({
+        nodeIndex,
         RunRoundError: error.message.includes('revertReason')
           ? parseRevertMessage(error.message)
           : error.message,
       })
     }
 
-    if (i + 1 === params.maxRoundsCount) {
-      params.parentPort.postMessage(
-        `Finished with simulated rounds (node ${params.nodeIndex})!`
+    if (i + 1 === maxRoundsCount) {
+      parentPort.postMessage(
+        `Finished with simulated rounds (node ${nodeIndex})!`
       )
-      params.parentPort.postMessage(FINISHED_CONSTANT)
+      parentPort.postMessage(FINISHED_CONSTANT)
 
       return
     }
 
     await waitForNextRound({
-      nodeIndex: params.nodeIndex,
-      parentPort: params.parentPort,
+      nodeIndex,
+      parentPort,
       NetworkProxyContract,
       roundIndex,
     })

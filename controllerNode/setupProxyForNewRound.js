@@ -13,10 +13,11 @@ const setupProxyForNewRound = async ({
   controllerAddress,
   controllerKeyBuffer,
   isUploadingFiles,
+  isRunningOnAws,
   maxUserCount,
 }) => {
   const NetworkProxyContract = getNetworkProxyContract()
-  const web3 = getWeb3(false)
+  const web3 = getWeb3({ isMain: false, isRunningOnAws })
 
   overwriteLog('Increase round index...')
   await sendTx({
@@ -32,6 +33,7 @@ const setupProxyForNewRound = async ({
     controllerAddress,
     controllerKeyBuffer,
     isUploadingFiles,
+    isRunningOnAws,
     maxUserCount,
   })
 

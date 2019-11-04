@@ -13,18 +13,21 @@ const exec = () => {
       '-d, --is-downloading-files',
       'is uploading heart rate files to SKALE'
     )
+    .option('-r, --is-running-on-aws', 'is running on remote AWS machines')
 
   program.parse(process.argv)
 
   const { maxRounds, nodeIndex, userCount } = program
 
   const isDownloadingFiles = program.isDownloadingFiles !== undefined
+  const isRunningOnAws = program.isRunningOnAws !== undefined
 
   runNode({
     parentPort: { postMessage: msg => printOverwriteLog(msg) },
     isDownloadingFiles,
     maxUserCount: parseInt(userCount),
     maxRoundsCount: parseInt(maxRounds),
+    isRunningOnAws,
     nodeIndex,
     failureOptions: {
       isNotRevealing: false,
