@@ -77,8 +77,6 @@ const runRound = async ({
       .call()).toString(),
   }) */
 
-  parentPort.postMessage('AAAAAAAAAAAAAAAAA')
-
   // STAGE 2
   const { assignedUsers, uniqUsers } = await retrieveAssignedUsers({
     maxUserCount,
@@ -89,8 +87,6 @@ const runRound = async ({
     web3,
   })
 
-  parentPort.postMessage('BBBBBBBBBBBBBBBBB')
-
   const wasCompliantData = await verifyHeartRateData({
     assignedUsers,
     isDownloadingFiles,
@@ -98,8 +94,6 @@ const runRound = async ({
     parentPort,
     roundIndex,
   })
-
-  parentPort.postMessage('CCCCCCCCCCCCCCCCCC')
 
   const complianceData = isSendingIncorrectResult
     ? wasCompliantData.map(({ wasCompliant }) => !wasCompliant)

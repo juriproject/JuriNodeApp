@@ -56,7 +56,7 @@ const getJuriTokenContract = async isRunningOnAws => {
 const getJuriFeesTokenAddress = async () => {
   if (juriFeesTokenAddress) return juriFeesTokenAddress
 
-  juriFeesTokenAddress = await getNetworkProxyContract()
+  juriFeesTokenAddress = await getNetworkProxyContract(isRunningOnAws)
     .methods.juriFeesToken()
     .call()
   return juriFeesTokenAddress
@@ -72,7 +72,7 @@ const getJuriFeesTokenContract = async isRunningOnAws => {
 
 const getJuriStakingPoolContracts = async isRunningOnAws => {
   const web3 = getWeb3({ isMain: false, isRunningOnAws })
-  const poolAddresses = await getNetworkProxyContract()
+  const poolAddresses = await getNetworkProxyContract(isRunningOnAws)
     .methods.getRegisteredJuriStakingPools()
     .call()
 
