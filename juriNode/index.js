@@ -22,7 +22,7 @@ const getAssignedUsersIndexes = require('./getAssignedUsersIndexes')
 const moveFromDissentToNextPeriod = require('./moveFromDissentToNextPeriod')
 const moveToDissentPeriod = require('./moveToDissentPeriod')
 const moveToNextRound = require('./moveToNextRound')
-const retrieveAssignedUsers = require('./retrieveAssignedUsers')
+const retrievePotentiallyAssignedUsers = require('./retrievePotentiallyAssignedUsers')
 const retrieveRewards = require('./retrieveRewards')
 const runDissentRound = require('./runDissentRound')
 const sendCommitments = require('./sendCommitments')
@@ -57,6 +57,22 @@ const runRound = async ({
     isSendingIncorrectDissent,
   },
 }) => {
+  /* if (nodeIndex == 0)
+    NetworkProxyContract.events.allEvents().on('data', event => {
+      console.log('EventName: ' + event.event)
+
+      if (!event.event) console.log(JSON.stringify(event))
+
+      if (event.event === 'AddedVerifierHash') {
+        console.log(
+          'Node: ' +
+            event.returnValues.node +
+            ' | User: ' +
+            event.returnValues.user
+        )
+      }
+    }) */
+
   parentPort.postMessage(
     'Starting round with mode: ' +
       JSON.stringify({
@@ -78,7 +94,10 @@ const runRound = async ({
   }) */
 
   // STAGE 2
-  const { assignedUsers, uniqUsers } = await retrieveAssignedUsers({
+  const {
+    potentiallyAssignedUsers,
+    uniqUsers,
+  } = await retrievePotentiallyAssignedUsers({
     maxUserCount,
     myJuriNodeAddress,
     NetworkProxyContract,
@@ -88,7 +107,7 @@ const runRound = async ({
   })
 
   const wasCompliantData = await verifyHeartRateData({
-    assignedUsers,
+    potentiallyAssignedUsers,
     isDownloadingFiles,
     NetworkProxyContract,
     parentPort,
@@ -102,7 +121,7 @@ const runRound = async ({
   // STAGE 3
   overwriteLog(`Sending commitments (node ${nodeIndex})...`, parentPort)
   const { randomNumbers } = await sendCommitments({
-    users: assignedUsers,
+    users: potentiallyAssignedUsers,
     isDissent: false,
     myJuriNodeAddress,
     myJuriNodePrivateKey,
@@ -130,14 +149,20 @@ const runRound = async ({
 
   parentPort.postMessage({ nodeIndex, finishedAssignedUsersIndexes })
 
+  const assignedUsers = finishedAssignedUsersIndexes.map(i => uniqUsers[i])
+
   // STAGE 3
   overwriteLog(`Sending reveals (node ${nodeIndex})...`, parentPort)
   if (!isNotRevealing) {
     await sendReveals({
-      users: finishedAssignedUsersIndexes.map(i => assignedUsers[i]),
-      randomNumbers: finishedAssignedUsersIndexes.map(i => randomNumbers[i]),
-      wasCompliantData: finishedAssignedUsersIndexes.map(
-        i => complianceData[i]
+      users: potentiallyAssignedUsers.filter(({ address }) =>
+        assignedUsers.includes(address)
+      ),
+      randomNumbers: randomNumbers.filter((_, i) =>
+        assignedUsers.includes(potentiallyAssignedUsers[i].address)
+      ),
+      wasCompliantData: complianceData.filter((_, i) =>
+        assignedUsers.includes(potentiallyAssignedUsers[i].address)
       ),
       isDissent: false,
       myJuriNodeAddress,
@@ -178,7 +203,7 @@ const runRound = async ({
     bondingAddress,
     isSendingIncorrectDissent,
     roundIndex,
-    users: assignedUsers,
+    users: potentiallyAssignedUsers,
     wasCompliantData: complianceData,
     myJuriNodeAddress,
     myJuriNodePrivateKey,
@@ -370,6 +395,8 @@ const safeRunRounds = async params => {
         web3,
       })
     } catch (error) {
+      console.log({ error }) // debugging
+
       parentPort.postMessage({ nodeIndex, error })
       parentPort.postMessage({
         nodeIndex,

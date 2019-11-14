@@ -2,7 +2,7 @@ const Web3Utils = require('web3-utils')
 
 const { JuriStakingPoolWithOracleMockAbi } = require('../config/contracts')
 
-const retrieveAssignedUsers = async ({
+const retrievePotentiallyAssignedUsers = async ({
   maxUserCount,
   myJuriNodeAddress,
   NetworkProxyContract,
@@ -31,7 +31,7 @@ const retrieveAssignedUsers = async ({
   }
 
   const uniqUsers = [...new Set(users)].slice(0, maxUserCount)
-  const assignedUsers = []
+  const potentiallyAssignedUsers = []
 
   for (let i = 0; i < uniqUsers.length; i++) {
     const user = uniqUsers[i]
@@ -40,36 +40,35 @@ const retrieveAssignedUsers = async ({
       .getUserWorkoutSignature(roundIndex, user)
       .call()
 
-    let lowestHash = THRESHOLD
-    let lowestIndex = -1
-
+    const lowestHashes = []
+    const proofIndices = []
     const bondedTokenAmount = 100 // TODO
 
-    for (let i = 0; i < bondedTokenAmount; i++) {
+    for (let proofIndex = 0; proofIndex < bondedTokenAmount; proofIndex++) {
       const hash = new web3.utils.BN(
         Web3Utils.soliditySha3(
           userWorkoutSignature,
           myJuriNodeAddress,
-          i
+          proofIndex
         ).slice(2),
         16
       )
 
-      if (lowestHash.gt(hash)) {
-        lowestHash = hash
-        lowestIndex = i
+      if (/*TODO THRESHOLD.gt(hash)*/ Math.random() > 0.97) {
+        lowestHashes.push('0x' + hash.toString(16).padStart(64, '0'))
+        proofIndices.push(proofIndex)
       }
     }
 
-    if (THRESHOLD.gt(lowestHash))
-      assignedUsers.push({
+    if (lowestHashes.length > 0)
+      potentiallyAssignedUsers.push({
         address: user,
-        lowestIndex,
-        lowestHash: '0x' + lowestHash.toString(16).padStart(64, '0'),
+        lowestHashes,
+        proofIndices,
       })
   }
 
-  return { assignedUsers, uniqUsers }
+  return { potentiallyAssignedUsers, uniqUsers }
 }
 
-module.exports = retrieveAssignedUsers
+module.exports = retrievePotentiallyAssignedUsers

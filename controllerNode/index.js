@@ -100,11 +100,11 @@ const runControllerRound = async ({
   for (let i = 0; i < JuriStakingPoolContracts.length; i++) {
     const JuriStakingPoolContract = JuriStakingPoolContracts[i]
 
-    /* postMessage({
+    parentPort.postMessage({
       balanceBeforeMint: (await JuriTokenFeesContract.methods
         .balanceOf(JuriStakingPoolContract._address)
         .call()).toString(),
-    }) */
+    })
 
     await sendTx({
       data: JuriTokenFeesContract.methods
@@ -116,11 +116,11 @@ const runControllerRound = async ({
       web3,
     })
 
-    /* parentPort.postMessage({
+    parentPort.postMessage({
       balanceAfterMint: (await JuriTokenFeesContract.methods
         .balanceOf(JuriStakingPoolContract._address)
         .call()).toString(),
-    }) */
+    })
 
     overwriteLog(`Handle JuriFees in pool ${i}...`, parentPort)
     await sendTx({
@@ -133,14 +133,14 @@ const runControllerRound = async ({
       web3,
     })
 
-    /* parentPort.postMessage({
+    parentPort.postMessage({
       balanceAfterHandling: (await JuriTokenFeesContract.methods
         .balanceOf(JuriStakingPoolContract._address)
         .call()).toString(),
       balanceAfterHandlingProxy: (await JuriTokenFeesContract.methods
         .balanceOf(NetworkProxyContract._address)
         .call()).toString(),
-    }) */
+    })
 
     overwriteLogEnd(`Handled JuriFees in pool ${i}!`, parentPort)
   }
@@ -198,7 +198,7 @@ const runControllerRounds = async ({
       parentPort,
     })
 
-    overwriteLog('Moving to nodes adding commitments stage...')
+    overwriteLog('Moving to nodes adding commitments stage...', parentPort)
     await sendTx({
       data: NetworkProxyContract.methods
         .moveToAddingCommitmentStage()
@@ -209,7 +209,7 @@ const runControllerRounds = async ({
       web3,
     })
 
-    overwriteLogEnd('Moved to nodes adding commitments stage!')
+    overwriteLogEnd('Moved to nodes adding commitments stage!', parentPort)
   }
 }
 

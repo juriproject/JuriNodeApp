@@ -69,15 +69,16 @@ const exec = async () => {
   const isUploadingFiles = program.isUploadingFiles !== undefined
   const isRunningOnAws = program.isRunningOnAws !== undefined
 
+  const directory = path.resolve(__dirname, '../logs')
+
   const controllerKeyBuffer = Buffer.from(controllerKey.slice(2), 'hex')
-  const controllerLogFile = 'logs/controllerNode.log'
+  const controllerLogFile = directory + '/controllerNode.log'
   const nodeLogFiles = []
 
   for (let i = 0; i < nodeCount; i++) {
-    nodeLogFiles.push(`logs/node${i}.log`)
+    nodeLogFiles.push(directory + `/node${i}.log`)
   }
 
-  const directory = './logs'
   const files = fs.readdirSync(directory)
   for (const file of files) {
     fs.unlinkSync(path.join(directory, file))
@@ -93,7 +94,11 @@ const exec = async () => {
 
   outputWriteStreams.push(fs.createWriteStream(controllerLogFile))
 
-  const awsDnsNames = fs.readFileSync('./awsDnsNames.env')
+  const awsDnsNamesFilePath = path.resolve(
+    __dirname,
+    '../../config/awsDnsNames.env'
+  )
+  const awsDnsNames = fs.readFileSync(awsDnsNamesFilePath)
   const hosts = String(awsDnsNames)
     .split('\n')
     .filter(line => line !== '')
@@ -149,7 +154,7 @@ const exec = async () => {
           failureOptions: {
             isNotRevealing: false,
             isSendingIncorrectResult: false,
-            isOffline: false,
+            isOffline: false, // nodeIndex === 4,
             isSendingIncorrectDissent: false, // nodeIndex === 3,
           },
         },

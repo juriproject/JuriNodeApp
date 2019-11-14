@@ -102,7 +102,7 @@ const slashDishonestNodes = async ({
     const { toSlash, user } = offlineNodes[i]
 
     overwriteLog(
-      `Slash offline [node=${toSlash}] for [user=${user}] (node ${nodeIndex})... `,
+      `Slash offline [node=${toSlash}] for [user=${user}] (node ${nodeIndex})...`,
       parentPort
     )
 
@@ -135,7 +135,8 @@ const slashDishonestNodes = async ({
     const { toSlash, user } = incorrectResultNodes[i]
 
     overwriteLog(
-      `Slash incorrect result [node=${toSlash}] for [user=${user}]... (node ${nodeIndex})`
+      `Slash incorrect result [node=${toSlash}] for [user=${user}]... (node ${nodeIndex})`,
+      parentPort
     )
 
     try {
@@ -154,7 +155,7 @@ const slashDishonestNodes = async ({
       )
     } catch (error) {
       overwriteLogEnd(
-        `slashed incorrect result failed (node ${nodeIndex})!`,
+        `Slashed incorrect result failed (node ${nodeIndex})!`,
         parentPort
       )
 
@@ -185,10 +186,14 @@ const slashDishonestNodes = async ({
         web3,
       })
       overwriteLogEnd(
-        `Succesfully slashed for incorrect dissent (node ${nodeIndex})!`
+        `Succesfully slashed for incorrect dissent (node ${nodeIndex})!`,
+        parentPort
       )
     } catch (error) {
-      overwriteLogEnd(`Slashed incorrect dissent failed (node ${nodeIndex})!`)
+      overwriteLogEnd(
+        `Slashed incorrect dissent failed (node ${nodeIndex})!`,
+        parentPort
+      )
 
       parentPort.postMessage(
         `IncorrectDissentSlashError: ${parseRevertMessage(

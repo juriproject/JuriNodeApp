@@ -37,7 +37,7 @@ const getEndpoint = ({ isMain, isRunningOnAws }) => {
 
 const getWeb3Provider = ({ isMain, isRunningOnAws }) => {
   const Web3 = require('web3')
-  return new Web3.providers.HttpProvider(
+  return new Web3.providers.WebsocketProvider(
     getEndpoint({ isMain, isRunningOnAws })
   )
 }

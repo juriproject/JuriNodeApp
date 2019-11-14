@@ -29,17 +29,28 @@ const exec = () => {
     if (Name === 'CONTROLLER_NODE') awsControllerUrl = PublicDnsName
   })
 
-  const filePath = path.resolve(__dirname, '../../config/awsControllerUrl.js')
+  const filePathControllerUrl = path.resolve(
+    __dirname,
+    '../../config/awsControllerUrl.js'
+  )
+  const filePathDnsNames = path.resolve(
+    __dirname,
+    '../../config/awsDnsNames.env'
+  )
 
-  fs.writeFile(filePath, `module.exports = '${awsControllerUrl}'\n`, err => {
-    if (err) {
-      return console.log(err)
+  fs.writeFile(
+    filePathControllerUrl,
+    `module.exports = '${awsControllerUrl}'\n`,
+    err => {
+      if (err) {
+        return console.log(err)
+      }
+
+      console.log('Saved awsControllerUrl successfully!')
     }
+  )
 
-    console.log('Saved awsControllerUrl successfully!')
-  })
-
-  fs.writeFile('./awsDnsNames.env', fileData, err => {
+  fs.writeFile(filePathDnsNames, fileData, err => {
     if (err) {
       return console.log(err)
     }
