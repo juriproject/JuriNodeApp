@@ -178,6 +178,9 @@ const exec = async () => {
     NetworkProxyContract,
     web3,
   })
+
+  console.log('Finished!')
+  process.exit(0)
 }
 
 exec()

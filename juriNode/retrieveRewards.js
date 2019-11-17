@@ -30,15 +30,22 @@ const retrieveRewards = async ({
       .call()).toString(),
   })
 
-  await sendTx({
-    data: NetworkProxyContract.methods
-      .retrieveRoundJuriFees(roundIndex)
-      .encodeABI(),
-    from: myJuriNodeAddress,
-    privateKey: myJuriNodePrivateKey,
-    to: networkProxyAddress,
-    web3,
-  })
+  try {
+    await sendTx({
+      data: NetworkProxyContract.methods
+        .retrieveRoundJuriFees(roundIndex)
+        .encodeABI(),
+      from: myJuriNodeAddress,
+      privateKey: myJuriNodePrivateKey,
+      to: networkProxyAddress,
+      web3,
+    })
+  } catch (error) {
+    parentPort.postMessage({
+      nodeIndex,
+      RetrieveRewardsError: parseRevertMessage(error.message),
+    })
+  }
 
   parentPort.postMessage({
     roundIndex: roundIndex.toString(),
