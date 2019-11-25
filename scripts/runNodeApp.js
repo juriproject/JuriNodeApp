@@ -14,10 +14,42 @@ const exec = () => {
       'is uploading heart rate files to SKALE'
     )
     .option('-r, --is-running-on-aws', 'is running on remote AWS machines')
+    .option(
+      '--offline-percentage <number>',
+      'chance of a node being offline in each round',
+      0,
+      Math.floor
+    )
+    .option(
+      '--incorrect-result-percentage <number>',
+      'chance of a node giving an incorrect result in each round',
+      0,
+      Math.floor
+    )
+    .option(
+      '--incorrect-dissent-percentage <number>',
+      'chance of a node giving an incorrect dissent in each round',
+      0,
+      Math.floor
+    )
+    .option(
+      '--not-reveal-percentage <number>',
+      'chance of a node not revealing commitment in each round',
+      0,
+      Math.floor
+    )
 
   program.parse(process.argv)
 
-  const { maxRounds, nodeIndex, userCount } = program
+  const {
+    incorrectDissentPercentage,
+    incorrectResultPercentage,
+    maxRounds,
+    nodeIndex,
+    notRevealPercentage,
+    offlinePercentage,
+    userCount,
+  } = program
 
   const isDownloadingFiles = program.isDownloadingFiles !== undefined
   const isRunningOnAws = program.isRunningOnAws !== undefined
@@ -30,10 +62,10 @@ const exec = () => {
     isRunningOnAws,
     nodeIndex,
     failureOptions: {
-      isNotRevealing: false,
-      isSendingIncorrectResult: false,
-      isOffline: false,
-      isSendingIncorrectDissent: false,
+      incorrectDissentPercentage,
+      incorrectResultPercentage,
+      notRevealPercentage,
+      offlinePercentage,
     },
   })
 }

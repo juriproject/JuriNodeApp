@@ -1,14 +1,24 @@
+const moveToNextStage = require('./moveToNextStage')
 const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
 const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
 const sleep = require('../helpers/sleep')
+const Stages = require('../helpers/Stages')
 
 const waitForNextStage = async ({
   NetworkProxyContract,
+  myJuriNodeAddress,
+  myJuriNodePrivateKey,
   nodeIndex,
   parentPort,
   timePerStage,
+  web3,
 }) => {
-  overwriteLog(`Waiting for next stage (node ${nodeIndex})... `, parentPort)
+  const currentStage = await NetworkProxyContract.methods.currentStage().call()
+
+  overwriteLog(
+    `Moving from ${Stages[currentStage]} stage (node ${nodeIndex})...`,
+    parentPort
+  )
 
   await sleep(1000)
   const lastStageUpdateBefore = parseInt(
@@ -31,10 +41,16 @@ const waitForNextStage = async ({
     )
   }
 
-  overwriteLogEnd(
-    `Waiting for next stage finished (node ${nodeIndex})!`,
-    parentPort
-  )
+  await moveToNextStage({
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
+    NetworkProxyContract,
+    parentPort,
+    nodeIndex,
+    web3,
+  })
+
+  overwriteLogEnd(`Move finished (node ${nodeIndex})!`, parentPort)
 }
 
 module.exports = waitForNextStage

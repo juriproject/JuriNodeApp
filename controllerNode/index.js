@@ -28,7 +28,9 @@ const moveTimeForNextStages = async ({
   timePerStage,
 }) => {
   for (let i = 0; i < stageCount; i++) {
-    await sleep(timePerStage * 1000 + 200)
+    const extraTimeForStage = i === 0 ? timePerStage : 0
+    const timeForStageInMs = timePerStage * 1000 + 200 + extraTimeForStage
+    await sleep(timeForStageInMs)
 
     const currentStage = await NetworkProxyContract.methods
       .currentStage()
@@ -65,7 +67,7 @@ const runControllerRound = async ({
     stageCount: 3,
   })
 
-  await sleep(timePerStage * 1000 * 2) // wait for dissenting/slashing
+  await sleep(timePerStage * 1000 * 2.2) // wait for dissenting/slashing
 
   const dissentedUsers = parseInt(
     await NetworkProxyContract.methods.getDissentedUsers().call()
@@ -78,10 +80,10 @@ const runControllerRound = async ({
       NetworkProxyContract,
       parentPort,
       timePerStage,
-      stageCount: 2,
+      stageCount: 3,
     })
 
-    await sleep(timePerStage * 1000 * 2) // wait for slashing
+    await sleep(timePerStage * 1000 * 2.2) // wait for slashing
   }
 
   const juriFees = 100

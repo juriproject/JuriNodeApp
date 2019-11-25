@@ -52,33 +52,45 @@ const getSplitProofIndicesCutoffs = ({
   return splitProofIndicesCutoffs
 }
 
-const getFirstSplitUserIndex = ({
+const getSplitItemsAtIndexes = ({
   currentIndex,
-  firstProofIndexCutoff,
+  proofIndicesCutoffs,
   usedProofIndexCount,
+  items,
 }) => {
-  if (currentIndex === 0 || firstProofIndexCutoff === 0)
-    return usedProofIndexCount
+  const firstProofIndexCutoff = proofIndicesCutoffs[0]
+  const userCountAtIndex =
+    firstProofIndexCutoff === 0
+      ? proofIndicesCutoffs.length
+      : proofIndicesCutoffs.length + 1
 
-  return usedProofIndexCount - 1 // use the last user twice
+  let firstSplitUserIndex = usedProofIndexCount
+  let lastSplitUserIndex = usedProofIndexCount + userCountAtIndex
+
+  if (currentIndex !== 0 && firstProofIndexCutoff !== 0) {
+    // shift one user to the left -> use last user twice
+    firstSplitUserIndex--
+    lastSplitUserIndex--
+  }
+
+  const itemsAtIndex = items.slice(firstSplitUserIndex, lastSplitUserIndex)
+
+  return { itemsAtIndex, lastSplitUserIndex }
 }
 
 const getSplitUsers = ({ splitProofIndicesCutoffs, users }) => {
   let usedProofIndexCount = 0
 
   const splitUsers = splitProofIndicesCutoffs.map((proofIndicesCutoffs, i) => {
-    const userCountAtIndex = proofIndicesCutoffs.length + 1
-    const usersAtIndex = users.slice(
-      getFirstSplitUserIndex({
-        currentIndex: i,
-        firstProofIndexCutoff: proofIndicesCutoffs[0],
-        usedProofIndexCount,
-      }),
-      usedProofIndexCount + userCountAtIndex
-    )
-    usedProofIndexCount += userCountAtIndex
+    const { itemsAtIndex, lastSplitUserIndex } = getSplitItemsAtIndexes({
+      currentIndex: i,
+      proofIndicesCutoffs,
+      usedProofIndexCount,
+      items: users,
+    })
+    usedProofIndexCount = lastSplitUserIndex
 
-    return usersAtIndex
+    return itemsAtIndex
   })
 
   return splitUsers
@@ -90,30 +102,28 @@ const getSplitCommitments = ({
 }) => {
   let usedProofIndexCount = 0
 
-  const splitWasCompliantDataCommitments = splitProofIndicesCutoffs.map(
+  const splitCommitments = splitProofIndicesCutoffs.map(
     (proofIndicesCutoffs, i) => {
-      const wasCompliantDataCountAtIndex = proofIndicesCutoffs.length + 1
-      const wasCompliantDataAtIndex = wasCompliantDataCommitments.slice(
-        getFirstSplitUserIndex({
-          currentIndex: i,
-          firstProofIndexCutoff: proofIndicesCutoffs[0],
-          usedProofIndexCount,
-        }),
-        usedProofIndexCount + wasCompliantDataCountAtIndex
-      )
-      usedProofIndexCount += wasCompliantDataCountAtIndex
+      const { itemsAtIndex, lastSplitUserIndex } = getSplitItemsAtIndexes({
+        currentIndex: i,
+        proofIndicesCutoffs,
+        usedProofIndexCount,
+        items: wasCompliantDataCommitments,
+      })
+      usedProofIndexCount = lastSplitUserIndex
 
-      return wasCompliantDataAtIndex
+      return itemsAtIndex
     }
   )
 
-  return splitWasCompliantDataCommitments
+  return splitCommitments
 }
 
 const splitCommitmentsIntoChunks = ({
   flatProofIndices,
   proofIndicesCutoffs,
   wasCompliantDataCommitments,
+  parentPort,
   users,
 }) => {
   const splitFlatProofIndices = getSplitFlatProofIndices(flatProofIndices)
@@ -126,6 +136,11 @@ const splitCommitmentsIntoChunks = ({
     splitProofIndicesCutoffs,
     wasCompliantDataCommitments,
   })
+
+  /* parentPort.postMessage({ splitFlatProofIndices })
+  parentPort.postMessage({ splitProofIndicesCutoffs })
+  parentPort.postMessage({ splitUsers })
+  parentPort.postMessage({ splitWasCompliantDataCommitments }) */
 
   return {
     splitFlatProofIndices,
@@ -149,11 +164,6 @@ const sendCommitmentsToContract = async ({
   web3,
 }) => {
   try {
-    parentPort.postMessage({
-      MESSAGE: 'Sending commitment!',
-      data: addMethodInput,
-    })
-
     await sendTx({
       data: NetworkProxyContract.methods[addMethod](
         ...addMethodInput
@@ -193,23 +203,21 @@ const sendCommitments = async ({
   for (let i = 0; i < users.length; i++) {
     const { address, proofIndices } = users[i]
 
-    // TODO
-    /* const heartRateData = await downloadHeartRateData(address)
-      const wasCompliant = verifyHeartRateData(heartRateData) */
-
     const wasCompliant = wasCompliantData[i]
     const randomNumber = '0x' + crypto.randomBytes(32).toString('hex')
     const commitmentHash = Web3Utils.soliditySha3(wasCompliant, randomNumber)
-    const currentCutoffIndex = lastCutoffIndex + proofIndices.length
 
     userAddresses.push(isDissent ? users[i] : address)
     wasCompliantDataCommitments.push(commitmentHash)
-    flatProofIndices.push(...proofIndices)
     randomNumbers.push(randomNumber)
 
-    if (i < users.length - 1) {
-      proofIndicesCutoffs.push(currentCutoffIndex)
+    if (!isDissent) flatProofIndices.push(...proofIndices)
+
+    if (!isDissent && i < users.length - 1) {
+      const currentCutoffIndex = lastCutoffIndex + proofIndices.length
       lastCutoffIndex = currentCutoffIndex
+
+      proofIndicesCutoffs.push(currentCutoffIndex)
     }
   }
 
@@ -229,10 +237,11 @@ const sendCommitments = async ({
     return { randomNumbers }
   }
 
-  parentPort.postMessage({
-    flatProofIndices,
-    proofIndicesCutoffs,
-  })
+  /* parentPort.postMessage({ users })
+  parentPort.postMessage({ flatProofIndices })
+  parentPort.postMessage({ proofIndicesCutoffs })
+  parentPort.postMessage({ users: userAddresses })
+  parentPort.postMessage({ wasCompliantDataCommitments }) */
 
   const {
     splitFlatProofIndices,
@@ -240,20 +249,18 @@ const sendCommitments = async ({
     splitWasCompliantDataCommitments,
     splitUsers,
   } = splitCommitmentsIntoChunks({
+    parentPort,
     users: userAddresses,
     wasCompliantDataCommitments,
     flatProofIndices,
     proofIndicesCutoffs,
   })
 
-  parentPort.postMessage({
-    splitFlatProofIndices,
-    splitProofIndicesCutoffs,
-    splitWasCompliantDataCommitments,
-    splitUsers,
-  })
-
   for (let i = 0; i < splitFlatProofIndices.length; i++) {
+    parentPort.postMessage(
+      `Sending commitment ${i + 1}/${splitFlatProofIndices.length}...`
+    )
+
     await sendCommitmentsToContract({
       addMethod: 'addWasCompliantDataCommitmentsForUsers',
       addMethodInput: [

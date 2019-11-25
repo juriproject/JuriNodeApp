@@ -4,12 +4,17 @@ const findAllNotRevealedNodes = async ({
   allNodes,
   allUsers,
   NetworkProxyContract,
+  nodeIndex,
   roundIndex,
 }) => {
   const notRevealedNodes = []
 
+  const firstUserIndex = nodeIndex - 4 < 0 ? 0 : nodeIndex - 4
+  const lastUserIndex =
+    nodeIndex + 4 > allUsers.length ? allUsers.length : nodeIndex + 4
+
   for (let i = 0; i < allNodes.length; i++) {
-    for (let j = 0; j < allUsers.length; j++) {
+    for (let j = firstUserIndex; j < lastUserIndex; j++) {
       const node = allNodes[i]
       const user = allUsers[j]
 

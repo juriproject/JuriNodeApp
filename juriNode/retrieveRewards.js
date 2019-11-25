@@ -1,5 +1,6 @@
 const { networkProxyAddress } = require('../config/contracts')
 
+const parseRevertMessage = require('../helpers/parseRevertMessage')
 const sendTx = require('../helpers/sendTx')
 
 const retrieveRewards = async ({
@@ -42,7 +43,6 @@ const retrieveRewards = async ({
     })
   } catch (error) {
     parentPort.postMessage({
-      nodeIndex,
       RetrieveRewardsError: parseRevertMessage(error.message),
     })
   }

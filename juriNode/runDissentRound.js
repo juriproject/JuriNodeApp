@@ -1,11 +1,9 @@
-const moveToSlashingPeriod = require('./moveToSlashingPeriod')
 const sendCommitments = require('./sendCommitments')
 const sendReveals = require('./sendReveals')
 const waitForNextStage = require('./waitForNextStage')
 
 const overwriteLog = require('../helpers/overwriteLogLib/overwriteLog')
 const overwriteLogEnd = require('../helpers/overwriteLogLib/overwriteLogEnd')
-const Stages = require('../helpers/Stages')
 
 const runDissentRound = async ({
   dissentedUsers,
@@ -34,20 +32,21 @@ const runDissentRound = async ({
       myJuriNodePrivateKey,
       NetworkProxyContract,
       nodeIndex,
+      parentPort,
       wasCompliantData,
       web3,
     })).randomNumbers
     overwriteLogEnd(`Sent dissent commitments (node ${nodeIndex})!`, parentPort)
   }
 
-  const currentStage0 = await NetworkProxyContract.methods.currentStage().call()
-  overwriteLogEnd(`Current Stage = ${Stages[currentStage0]}`, parentPort)
-
   await waitForNextStage({
     NetworkProxyContract,
-    parentPort,
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
     nodeIndex,
+    parentPort,
     timePerStage,
+    web3,
   })
 
   // STAGE 5.2
@@ -66,34 +65,22 @@ const runDissentRound = async ({
       myJuriNodeAddress,
       myJuriNodePrivateKey,
       NetworkProxyContract,
+      nodeIndex,
+      parentPort,
       web3,
     })
     overwriteLogEnd(`Dissent reveals sent (node ${nodeIndex})!`, parentPort)
   }
 
-  const currentStage1 = await NetworkProxyContract.methods.currentStage().call()
-  overwriteLogEnd(`Current Stage = ${Stages[currentStage1]}`, parentPort)
-
   await waitForNextStage({
     NetworkProxyContract,
-    parentPort,
-    nodeIndex,
-    timePerStage,
-  })
-
-  overwriteLog(`Moving to slashing period (node ${nodeIndex})...`, parentPort)
-  await moveToSlashingPeriod({
     myJuriNodeAddress,
     myJuriNodePrivateKey,
-    NetworkProxyContract,
-    parentPort,
     nodeIndex,
+    parentPort,
+    timePerStage,
     web3,
   })
-  overwriteLogEnd(`Moved to slashing period (node ${nodeIndex})!`, parentPort)
-
-  const currentStage2 = await NetworkProxyContract.methods.currentStage().call()
-  overwriteLogEnd(`Current Stage = ${Stages[currentStage2]}`, parentPort)
 }
 
 module.exports = runDissentRound

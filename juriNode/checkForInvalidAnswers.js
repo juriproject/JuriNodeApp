@@ -38,7 +38,7 @@ const checkForInvalidAnswers = async ({
       (wasAssignedToUser &&
         parseInt(acceptedAnswer) >= 0 !== wasCompliantData[i] &&
         !isDissented)
-      // = 0 because 0 is considered a compliant user (when in doubt, give user the benefit)
+      // '= 0' because 0 is considered a compliant user (when in doubt, give user the benefit)
     ) {
       usersToDissent.push(address)
     }

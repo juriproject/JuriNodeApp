@@ -2,7 +2,7 @@ const { networkProxyAddress } = require('../config/contracts')
 const parseRevertMessage = require('../helpers/parseRevertMessage')
 const sendTx = require('../helpers/sendTx')
 
-const moveFromDissentToNextPeriod = async ({
+const moveToNextStage = async ({
   myJuriNodeAddress,
   myJuriNodePrivateKey,
   NetworkProxyContract,
@@ -12,9 +12,7 @@ const moveFromDissentToNextPeriod = async ({
 }) => {
   try {
     await sendTx({
-      data: NetworkProxyContract.methods
-        .moveFromDissentToNextPeriod()
-        .encodeABI(),
+      data: NetworkProxyContract.methods.moveToNextStage().encodeABI(),
       from: myJuriNodeAddress,
       privateKey: myJuriNodePrivateKey,
       to: networkProxyAddress,
@@ -23,9 +21,9 @@ const moveFromDissentToNextPeriod = async ({
   } catch (error) {
     parentPort.postMessage({
       nodeIndex,
-      MoveFromDissentToNextPeriodError: parseRevertMessage(error.message),
+      MoveToNextStageError: parseRevertMessage(error.message),
     })
   }
 }
 
-module.exports = moveFromDissentToNextPeriod
+module.exports = moveToNextStage

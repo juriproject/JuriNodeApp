@@ -19,10 +19,9 @@ const parseRevertMessage = require('../helpers/parseRevertMessage')
 
 const checkForInvalidAnswers = require('./checkForInvalidAnswers')
 const getAssignedUsersIndexes = require('./getAssignedUsersIndexes')
-const moveFromDissentToNextPeriod = require('./moveFromDissentToNextPeriod')
-const moveToDissentPeriod = require('./moveToDissentPeriod')
 const moveToNextRound = require('./moveToNextRound')
-const retrievePotentiallyAssignedUsers = require('./retrievePotentiallyAssignedUsers')
+const moveToNextStage = require('./moveToNextStage')
+const retrieveUniqAndPotentiallyAssignedUsers = require('./retrieveUniqAndPotentiallyAssignedUsers')
 const retrieveRewards = require('./retrieveRewards')
 const runDissentRound = require('./runDissentRound')
 const sendCommitments = require('./sendCommitments')
@@ -51,10 +50,10 @@ const runRound = async ({
   timePerStage,
   web3,
   failureOptions: {
-    isNotRevealing,
-    isSendingIncorrectResult,
-    isOffline,
-    isSendingIncorrectDissent,
+    incorrectDissentPercentage,
+    incorrectResultPercentage,
+    notRevealPercentage,
+    offlinePercentage,
   },
 }) => {
   /* if (nodeIndex == 0)
@@ -72,6 +71,13 @@ const runRound = async ({
         )
       }
     }) */
+
+  const isNotRevealing = Math.random() * 100 < notRevealPercentage
+  const isSendingIncorrectResult =
+    Math.random() * 100 < incorrectResultPercentage
+  const isOffline = Math.random() * 100 < offlinePercentage
+  const isSendingIncorrectDissent =
+    Math.random() * 100 < incorrectDissentPercentage
 
   parentPort.postMessage(
     'Starting round with mode: ' +
@@ -97,7 +103,7 @@ const runRound = async ({
   const {
     potentiallyAssignedUsers,
     uniqUsers,
-  } = await retrievePotentiallyAssignedUsers({
+  } = await retrieveUniqAndPotentiallyAssignedUsers({
     maxUserCount,
     myJuriNodeAddress,
     NetworkProxyContract,
@@ -107,7 +113,7 @@ const runRound = async ({
   })
 
   const wasCompliantData = await verifyHeartRateData({
-    potentiallyAssignedUsers,
+    users: potentiallyAssignedUsers.map(({ address }) => address),
     isDownloadingFiles,
     NetworkProxyContract,
     parentPort,
@@ -135,9 +141,12 @@ const runRound = async ({
 
   await waitForNextStage({
     NetworkProxyContract,
-    parentPort,
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
     nodeIndex,
+    parentPort,
     timePerStage,
+    web3,
   })
 
   const finishedAssignedUsersIndexes = await getAssignedUsersIndexes({
@@ -151,7 +160,7 @@ const runRound = async ({
 
   const assignedUsers = finishedAssignedUsersIndexes.map(i => uniqUsers[i])
 
-  // STAGE 3
+  // STAGE 4
   overwriteLog(`Sending reveals (node ${nodeIndex})...`, parentPort)
   if (!isNotRevealing) {
     await sendReveals({
@@ -178,13 +187,16 @@ const runRound = async ({
 
   await waitForNextStage({
     NetworkProxyContract,
-    parentPort,
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
     nodeIndex,
+    parentPort,
     timePerStage,
+    web3,
   })
 
   overwriteLog(`Moving to dissent period (node ${nodeIndex})...`, parentPort)
-  await moveToDissentPeriod({
+  await moveToNextStage({
     myJuriNodeAddress,
     myJuriNodePrivateKey,
     NetworkProxyContract,
@@ -194,7 +206,7 @@ const runRound = async ({
   })
   overwriteLogEnd(`Moved to dissent period (node ${nodeIndex})!`, parentPort)
 
-  // STAGE 4
+  // STAGE 5
   overwriteLog(
     `Dissenting to invalid answers (node ${nodeIndex})...`,
     parentPort
@@ -227,24 +239,17 @@ const runRound = async ({
     })
   }
 
-  overwriteLog(`Move from dissent period... (node ${nodeIndex})`, parentPort)
   await waitForNextStage({
     NetworkProxyContract,
-    parentPort,
-    nodeIndex,
-    timePerStage,
-  })
-  await moveFromDissentToNextPeriod({
     myJuriNodeAddress,
     myJuriNodePrivateKey,
-    NetworkProxyContract,
-    parentPort,
     nodeIndex,
+    parentPort,
+    timePerStage,
     web3,
   })
-  overwriteLogEnd(`Moved from dissent period (node ${nodeIndex})!`, parentPort)
 
-  // STAGE 5
+  // STAGE 6
   const allDissentedUsers = await NetworkProxyContract.methods
     .getDissentedUsers()
     .call()
@@ -255,14 +260,25 @@ const runRound = async ({
         .getUserComplianceDataCommitment(roundIndex, myJuriNodeAddress, user)
         .call()) === ZERO_ADDRESS
   )
-  const dissentComplianceData = complianceData.filter((_, i) =>
-    dissentedUsers.find(user => user === uniqUsers[i])
-  )
+  const dissentWasCompliantData = (await verifyHeartRateData({
+    users: dissentedUsers,
+    isDownloadingFiles,
+    NetworkProxyContract,
+    parentPort,
+    roundIndex,
+  })).map(({ wasCompliant }) => wasCompliant)
+
+  /* parentPort.postMessage({
+    allDissentedUsersLength: allDissentedUsers.length,
+    filteredDissentedUsersLength: dissentedUsers.length,
+    filteredComplianceDataLength: dissentWasCompliantData.length,
+    isSendingResults: !isOffline && dissentedUsers.length > 0,
+  }) */
 
   if (allDissentedUsers.length > 0)
     await runDissentRound({
       dissentedUsers,
-      wasCompliantData: dissentComplianceData,
+      wasCompliantData: dissentWasCompliantData,
       isSendingResults: !isOffline && dissentedUsers.length > 0,
       myJuriNodeAddress,
       myJuriNodePrivateKey,
@@ -300,8 +316,19 @@ const runRound = async ({
     parentPort,
     nodeIndex,
     roundIndex,
+    web3,
   })
   overwriteLogEnd(`Dishonest nodes slashed (node ${nodeIndex})!`, parentPort)
+
+  await waitForNextStage({
+    NetworkProxyContract,
+    myJuriNodeAddress,
+    myJuriNodePrivateKey,
+    nodeIndex,
+    parentPort,
+    timePerStage,
+    web3,
+  })
 
   // STAGE 7
   await moveToNextRound({

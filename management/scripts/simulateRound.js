@@ -50,6 +50,30 @@ const exec = async () => {
     .option('-n, --node-count <number>', 'node count', 4, Math.floor)
     .option('-m, --max-rounds <number>', 'max rounds count', 1, Math.floor)
     .option(
+      '--offline-percentage <number>',
+      'chance of a node being offline in each round',
+      0,
+      Math.floor
+    )
+    .option(
+      '--incorrect-result-percentage <number>',
+      'chance of a node giving an incorrect result in each round',
+      0,
+      Math.floor
+    )
+    .option(
+      '--incorrect-dissent-percentage <number>',
+      'chance of a node giving an incorrect dissent in each round',
+      0,
+      Math.floor
+    )
+    .option(
+      '--not-reveal-percentage <number>',
+      'chance of a node not revealing commitment in each round',
+      0,
+      Math.floor
+    )
+    .option(
       '-up, --is-uploading-files',
       'is uploading heart rate files to SKALE'
     )
@@ -60,8 +84,12 @@ const exec = async () => {
   const {
     controllerAddress,
     controllerKey,
+    incorrectDissentPercentage,
+    incorrectResultPercentage,
     maxRounds,
     nodeCount,
+    notRevealPercentage,
+    offlinePercentage,
     timePerStage,
     userCount,
   } = program
@@ -138,9 +166,11 @@ const exec = async () => {
       runRemoteCommand({
         outputWriteStream: outputWriteStreams[nodeIndex + 1],
         host: hosts[`NODE${nodeIndex + 1}`],
-        command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} --user-count ${userCount} --max-rounds ${maxRounds} ${
+        command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} ${
           isUploadingFiles ? '--is-downloading-files' : ''
-        } ${isRunningOnAws ? '--is-running-on-aws' : ''}`,
+        } --incorrect-result-percentage ${incorrectResultPercentage} --incorrect-dissent-percentage ${incorrectDissentPercentage} --offline-percentage ${offlinePercentage} --not-reveal-percentage ${notRevealPercentage} ${
+          isRunningOnAws ? '--is-running-on-aws' : ''
+        } --user-count ${userCount} --max-rounds ${maxRounds}`,
       })
     else
       runJuriNodeRoundsService({
@@ -152,10 +182,10 @@ const exec = async () => {
           maxUserCount: parseInt(userCount),
           nodeIndex,
           failureOptions: {
-            isNotRevealing: false,
-            isSendingIncorrectResult: false,
-            isOffline: false, // nodeIndex === 4,
-            isSendingIncorrectDissent: false, // nodeIndex === 3,
+            incorrectDissentPercentage,
+            incorrectResultPercentage,
+            notRevealPercentage,
+            offlinePercentage,
           },
         },
       })

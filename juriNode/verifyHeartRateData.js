@@ -1,15 +1,15 @@
 const { getFilestorage } = require('../config/testing')
 
 const downloadHeartRateDataFiles = async ({
-  potentiallyAssignedUsers,
+  users,
   isDownloadingFiles,
   NetworkProxyContract,
   roundIndex,
 }) => {
   const heartRateDataFiles = []
 
-  for (let i = 0; i < potentiallyAssignedUsers.length; i++) {
-    const userAddress = potentiallyAssignedUsers[i].address
+  for (let i = 0; i < users.length; i++) {
+    const userAddress = users[i]
     const storagePath = await NetworkProxyContract.methods
       .getHeartRateDataStoragePath(roundIndex, userAddress)
       .call()
@@ -42,13 +42,13 @@ const analyzeHeartRateData = async heartRateDataFiles => {
 }
 
 const verifyHeartRateData = async ({
-  potentiallyAssignedUsers,
+  users,
   isDownloadingFiles,
   NetworkProxyContract,
   roundIndex,
 }) => {
   const heartRateDataFiles = await downloadHeartRateDataFiles({
-    potentiallyAssignedUsers,
+    users,
     isDownloadingFiles,
     NetworkProxyContract,
     roundIndex,

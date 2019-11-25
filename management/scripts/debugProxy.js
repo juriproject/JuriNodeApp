@@ -9,6 +9,7 @@ const {
 const { getWeb3 } = require('../../config/skale')
 
 const sendTx = require('../../helpers/sendTx')
+const Stages = require('../../helpers/Stages')
 
 const accounts = require('../../config/accounts')
 
@@ -19,6 +20,9 @@ const exec = async () => {
   const BondingContract = await getBondingContract(isRunningOnAws)
 
   const roundIndex = await NetworkProxyContract.methods.roundIndex().call()
+  const currentStage =
+    Stages[await NetworkProxyContract.methods.currentStage().call()]
+
   const stakingNodesAddressCount = await BondingContract.methods
     .stakingNodesAddressCount(roundIndex)
     .call()
@@ -39,7 +43,59 @@ const exec = async () => {
     .skaleMessageProxyAddressMain()
     .call()
 
+  const complianceData = [
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+  ]
+  const myJuriNodeAddress = '0xDa12C700772F053B5a57CcF403339AA89c060926'
+  const allDissentedUsers = await NetworkProxyContract.methods
+    .getDissentedUsers()
+    .call()
+  const filterAsync = require('../../helpers/filterAsync')
+  const { ZERO_ADDRESS } = require('../../config/testing')
+  const dissentedUsers = await filterAsync(
+    allDissentedUsers,
+    async user =>
+      (await NetworkProxyContract.methods
+        .getUserComplianceDataCommitment(roundIndex, myJuriNodeAddress, user)
+        .call()) === ZERO_ADDRESS
+  )
+  const uniqUsers = require('../../config/accounts').users.map(u => u.address)
+  const dissentComplianceData = complianceData.filter((_, i) =>
+    dissentedUsers.find(user => {
+      console.log(
+        `Comparing at index ${i} if ${uniqUsers[i].slice(
+          0,
+          5
+        )} === ${user.slice(0, 5)}`
+      )
+      return user === uniqUsers[i]
+    })
+  )
+
   console.log({
+    allDissentedUsers,
+    dissentedUsers,
+    dissentComplianceData,
+  })
+
+  console.log({
+    currentStage,
     roundIndex: roundIndex.toString(),
     stakingNodesAddressCount: stakingNodesAddressCount.toString(),
     nodesToUpdate,
