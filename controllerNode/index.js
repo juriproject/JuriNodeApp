@@ -84,7 +84,15 @@ const runControllerRound = async ({
     })
 
     await sleep(timePerStage * 1000 * 2.2) // wait for slashing
-  }
+  } else
+    await moveTimeForNextStages({
+      controllerAddress,
+      controllerKeyBuffer,
+      NetworkProxyContract,
+      parentPort,
+      timePerStage,
+      stageCount: 1,
+    })
 
   const juriFees = 100
   const JuriStakingPoolContracts = await getJuriStakingPoolContracts(

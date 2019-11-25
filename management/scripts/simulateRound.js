@@ -141,9 +141,7 @@ const exec = async () => {
     runRemoteCommand({
       outputWriteStream: outputWriteStreams[0],
       host: hosts.CONTROLLER_NODE,
-      command: `node JuriNodeApp/scripts/runControllerNode.js --controller-address ${controllerAddress} --controller-key ${controllerKey} --time-per-stage ${timePerStage} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files ${
-        isRunningOnAws ? '--is-running-on-aws' : ''
-      }`,
+      command: `node JuriNodeApp/scripts/runControllerNode.js --controller-address ${controllerAddress} --controller-key ${controllerKey} --time-per-stage ${timePerStage} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files --is-running-on-aws`,
     })
   else
     runControllerRoundsService({
@@ -166,11 +164,9 @@ const exec = async () => {
       runRemoteCommand({
         outputWriteStream: outputWriteStreams[nodeIndex + 1],
         host: hosts[`NODE${nodeIndex + 1}`],
-        command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} ${
+        command: `node JuriNodeApp/scripts/runNodeApp.js --node-index=${nodeIndex} --is-running-on-aws --user-count ${userCount} --max-rounds ${maxRounds} ${
           isUploadingFiles ? '--is-downloading-files' : ''
-        } --incorrect-result-percentage ${incorrectResultPercentage} --incorrect-dissent-percentage ${incorrectDissentPercentage} --offline-percentage ${offlinePercentage} --not-reveal-percentage ${notRevealPercentage} ${
-          isRunningOnAws ? '--is-running-on-aws' : ''
-        } --user-count ${userCount} --max-rounds ${maxRounds}`,
+        } --incorrect-result-percentage ${incorrectResultPercentage} --incorrect-dissent-percentage ${incorrectDissentPercentage} --offline-percentage ${offlinePercentage} --not-reveal-percentage ${notRevealPercentage}`,
       })
     else
       runJuriNodeRoundsService({
