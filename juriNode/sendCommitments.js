@@ -3,22 +3,12 @@ const Web3Utils = require('web3-utils')
 
 const { networkProxyAddress } = require('../config/contracts')
 
+const { getArrayChunks, CHUNK_LENGTH } = require('../helpers/getArrayChunks')
 const parseRevertMessage = require('../helpers/parseRevertMessage')
 const sendTx = require('../helpers/sendTx')
 
-const COMMITMENT_CHUNK_LENGTH = 20
-
-const arrayChunks = (array, chunk_size) =>
-  Array(Math.ceil(array.length / chunk_size))
-    .fill()
-    .map((_, index) => index * chunk_size)
-    .map(begin => array.slice(begin, begin + chunk_size))
-
 const getSplitFlatProofIndices = flatProofIndices => {
-  const splitFlatProofIndices = arrayChunks(
-    flatProofIndices,
-    COMMITMENT_CHUNK_LENGTH
-  )
+  const splitFlatProofIndices = getArrayChunks(flatProofIndices)
 
   return splitFlatProofIndices
 }
@@ -32,18 +22,11 @@ const getSplitProofIndicesCutoffs = ({
   for (let index = 0; index < proofIndicesCutoffs.length; index++) {
     const chunkIndex = splitProofIndicesCutoffs.length - 1
     const proofIndicesCutoff = proofIndicesCutoffs[index]
-    const mappedProofIndex =
-      proofIndicesCutoff - chunkIndex * COMMITMENT_CHUNK_LENGTH
+    const mappedProofIndex = proofIndicesCutoff - chunkIndex * CHUNK_LENGTH
 
-    if (
-      proofIndicesCutoff <
-      COMMITMENT_CHUNK_LENGTH + chunkIndex * COMMITMENT_CHUNK_LENGTH
-    )
+    if (proofIndicesCutoff < CHUNK_LENGTH + chunkIndex * CHUNK_LENGTH)
       splitProofIndicesCutoffs[chunkIndex].push(mappedProofIndex)
-    else
-      splitProofIndicesCutoffs.push([
-        mappedProofIndex - COMMITMENT_CHUNK_LENGTH,
-      ])
+    else splitProofIndicesCutoffs.push([mappedProofIndex - CHUNK_LENGTH])
   }
 
   if (splitProofIndicesCutoffs.length < splitFlatProofIndices.length)
@@ -123,7 +106,7 @@ const splitCommitmentsIntoChunks = ({
   flatProofIndices,
   proofIndicesCutoffs,
   wasCompliantDataCommitments,
-  parentPort,
+  parentPort, // eslint-disable-line no-unused-vars
   users,
 }) => {
   const splitFlatProofIndices = getSplitFlatProofIndices(flatProofIndices)
@@ -222,6 +205,7 @@ const sendCommitments = async ({
   }
 
   if (isDissent) {
+    // TODO should also be split for dissents, not likely required, but should be implemented
     await sendCommitmentsToContract({
       addMethod: 'addDissentWasCompliantDataCommitmentsForUsers',
       addMethodInput: [userAddresses, wasCompliantDataCommitments],

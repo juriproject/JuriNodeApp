@@ -12,15 +12,16 @@ const findAllIncorrectResultNodes = async ({
       const node = allNodes[i]
       const user = dissentedUsers[j]
 
-      const givenAnswer = await NetworkProxyContract.methods
-        .getGivenNodeResult(roundIndex, node, user)
-        .call()
-      const acceptedAnswer =
-        parseInt(
-          await NetworkProxyContract.methods
-            .getUserComplianceData(roundIndex, user)
-            .call({ from: bondingAddress })
-        ) >= 0
+      const [givenAnswer, userComplianceData] = await Promise.all([
+        NetworkProxyContract.methods
+          .getGivenNodeResult(roundIndex, node, user)
+          .call(),
+        NetworkProxyContract.methods
+          .getUserComplianceData(roundIndex, user)
+          .call({ from: bondingAddress }),
+      ])
+
+      const acceptedAnswer = parseInt(userComplianceData) >= 0
 
       if (givenAnswer !== acceptedAnswer) {
         incorrectResultNodes.push({ toSlash: node, user })

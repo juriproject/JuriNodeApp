@@ -9,6 +9,7 @@ const retrievePotentiallyAssignedUsers = async ({
   roundIndex,
   web3,
 }) => {
+  // eslint-disable-next-line no-unused-vars
   const THRESHOLD = new web3.utils.BN(
     '115792089237316195423570985008687907853269984665640564039457584007913129639936'
   ) // TODO
@@ -42,7 +43,7 @@ const retrievePotentiallyAssignedUsers = async ({
 
     const lowestHashes = []
     const proofIndices = []
-    const bondedTokenAmount = 100 // TODO
+    const bondedTokenAmount = 30 // TODO
 
     for (let proofIndex = 0; proofIndex < bondedTokenAmount; proofIndex++) {
       const hash = new web3.utils.BN(

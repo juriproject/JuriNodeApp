@@ -22,31 +22,38 @@ const slashDishonestNodes = async ({
   parentPort,
   web3,
 }) => {
-  const notRevealedNodes = await findAllNotRevealedNodes({
-    allNodes,
-    allUsers,
-    NetworkProxyContract,
-    roundIndex,
-  })
-  const offlineNodes = await findAllOfflineNodes({
-    allNodes,
-    dissentedUsers,
-    NetworkProxyContract,
-    roundIndex,
-  })
-  const incorrectResultNodes = await findAllIncorrectResultNodes({
-    allNodes,
-    bondingAddress,
-    dissentedUsers,
-    NetworkProxyContract,
-    roundIndex,
-  })
-  const incorrectDissentNodes = await findAllIncorrectDissentNodes({
-    allNodes,
-    dissentedUsers,
-    NetworkProxyContract,
-    roundIndex,
-  })
+  const [
+    notRevealedNodes,
+    offlineNodes,
+    incorrectResultNodes,
+    incorrectDissentNodes,
+  ] = await Promise.all([
+    findAllNotRevealedNodes({
+      allNodes,
+      allUsers,
+      NetworkProxyContract,
+      roundIndex,
+    }),
+    findAllOfflineNodes({
+      allNodes,
+      dissentedUsers,
+      NetworkProxyContract,
+      roundIndex,
+    }),
+    findAllIncorrectResultNodes({
+      allNodes,
+      bondingAddress,
+      dissentedUsers,
+      NetworkProxyContract,
+      roundIndex,
+    }),
+    findAllIncorrectDissentNodes({
+      allNodes,
+      dissentedUsers,
+      NetworkProxyContract,
+      roundIndex,
+    }),
+  ])
 
   parentPort.postMessage({
     nodeIndex,

@@ -9,21 +9,14 @@ const findAllOfflineNodes = async ({
   for (let i = 0; i < allNodes.length; i++) {
     for (let j = 0; j < dissentedUsers.length; j++) {
       const node = allNodes[i]
-      const user = dissentedUsers[j]
-
-      const userWasDissented = await NetworkProxyContract.methods
-        .getDissented(roundIndex, user)
+      const dissentedUser = dissentedUsers[j]
+      const commitment = await NetworkProxyContract.methods
+        .getUserComplianceDataCommitment(roundIndex, node, dissentedUser)
         .call()
 
-      if (userWasDissented) {
-        const commitment = await NetworkProxyContract.methods
-          .getUserComplianceDataCommitment(roundIndex, node, user)
-          .call()
-
-        if (commitment == 0x0) {
-          offlineNodes.push({ toSlash: node, user })
-          break
-        }
+      if (commitment == 0x0) {
+        offlineNodes.push({ toSlash: node, user: dissentedUser })
+        break
       }
     }
   }
