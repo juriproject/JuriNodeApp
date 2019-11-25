@@ -17,19 +17,19 @@
   },
   "homepage": "https://github.com/juriproject/JuriNodeApp#readme",
   "devDependencies": {
-    "@skalenetwork/filestorage.js": "^0.2.7",
+    "@skalenetwork/filestorage.js": "^0.2.8",
     "babel-eslint": "^10.0.3",
     "commander": "^3.0.2",
-    "eslint": "^6.2.2",
-    "eslint-config-prettier": "^6.1.0",
-    "eslint-plugin-prettier": "^3.1.0",
+    "eslint": "^6.7.1",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-prettier": "^3.1.1",
     "node-cleanup": "^2.1.2",
-    "prettier": "^1.18.2"
+    "prettier": "^1.19.1"
   },
   "dependencies": {
-    "ethereumjs-tx": "^2.1.0",
+    "ethereumjs-tx": "^2.1.1",
     "juriproject-skale-filestorage": "0.0.1",
-    "ssh2": "^0.8.5",
-    "web3": "^1.2.1"
+    "ssh2": "^0.8.6",
+    "web3": "^1.2.4"
   }
 }
