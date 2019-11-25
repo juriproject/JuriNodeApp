@@ -12,6 +12,7 @@ const waitForNextStage = async ({
   parentPort,
   timePerStage,
   web3,
+  isMovingStage = true,
 }) => {
   const currentStage = await NetworkProxyContract.methods.currentStage().call()
 
@@ -41,14 +42,15 @@ const waitForNextStage = async ({
     )
   }
 
-  await moveToNextStage({
-    myJuriNodeAddress,
-    myJuriNodePrivateKey,
-    NetworkProxyContract,
-    parentPort,
-    nodeIndex,
-    web3,
-  })
+  if (isMovingStage)
+    await moveToNextStage({
+      myJuriNodeAddress,
+      myJuriNodePrivateKey,
+      NetworkProxyContract,
+      parentPort,
+      nodeIndex,
+      web3,
+    })
 
   overwriteLogEnd(`Move finished (node ${nodeIndex})!`, parentPort)
 }

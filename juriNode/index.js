@@ -328,6 +328,7 @@ const runRound = async ({
     parentPort,
     timePerStage,
     web3,
+    isMovingStage: false,
   })
 
   // STAGE 7
