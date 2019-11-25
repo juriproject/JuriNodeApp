@@ -26,9 +26,6 @@ const sendReveals = async ({
     userAddresses,
     wasCompliantData,
     randomNumbers,
-    splitUserAddresses,
-    splitWasCompliantData,
-    splitRandomNumbers,
   })
 
   for (let i = 0; i < splitUserAddresses.length; i++) {

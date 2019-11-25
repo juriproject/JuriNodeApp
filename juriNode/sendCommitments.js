@@ -221,6 +221,12 @@ const sendCommitments = async ({
     return { randomNumbers }
   }
 
+  parentPort.postMessage({
+    users,
+    wasCompliantDataCommitments,
+    randomNumbers,
+  })
+
   /* parentPort.postMessage({ users })
   parentPort.postMessage({ flatProofIndices })
   parentPort.postMessage({ proofIndicesCutoffs })
