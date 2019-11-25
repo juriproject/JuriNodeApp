@@ -10,6 +10,7 @@ const sendReveals = async ({
   myJuriNodeAddress,
   myJuriNodePrivateKey,
   NetworkProxyContract,
+  parentPort,
   web3,
 }) => {
   const userAddresses = isDissent ? users : users.map(({ address }) => address)
@@ -20,6 +21,15 @@ const sendReveals = async ({
   const splitUserAddresses = getArrayChunks(userAddresses)
   const splitWasCompliantData = getArrayChunks(wasCompliantData)
   const splitRandomNumbers = getArrayChunks(randomNumbers)
+
+  parentPort.postMessage({
+    userAddresses,
+    wasCompliantData,
+    randomNumbers,
+    splitUserAddresses,
+    splitWasCompliantData,
+    splitRandomNumbers,
+  })
 
   for (let i = 0; i < splitUserAddresses.length; i++) {
     await sendTx({
