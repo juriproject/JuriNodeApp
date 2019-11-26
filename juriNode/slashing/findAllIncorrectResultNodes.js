@@ -1,20 +1,28 @@
 const findAllIncorrectResultNodes = async ({
   allNodes,
+  allUsers,
   bondingAddress,
-  dissentedUsers,
   NetworkProxyContract,
+  nodeIndex,
   roundIndex,
 }) => {
   const incorrectResultNodes = []
 
-  for (let i = 0; i < allNodes.length; i++) {
-    for (let j = 0; j < dissentedUsers.length; j++) {
-      const node = allNodes[i]
-      const user = dissentedUsers[j]
+  const firstUserIndex = nodeIndex - 4 < 0 ? 0 : nodeIndex - 4
+  const lastUserIndex =
+    nodeIndex + 4 > allUsers.length ? allUsers.length : nodeIndex + 4
 
-      const [givenAnswer, userComplianceData] = await Promise.all([
+  for (let i = 0; i < allNodes.length; i++) {
+    for (let j = firstUserIndex; j < lastUserIndex; j++) {
+      const node = allNodes[i]
+      const user = allUsers[j]
+
+      const [givenAnswer, hasRevealed, userComplianceData] = await Promise.all([
         NetworkProxyContract.methods
           .getGivenNodeResult(roundIndex, node, user)
+          .call(),
+        NetworkProxyContract.methods
+          .getHasRevealed(roundIndex, node, user)
           .call(),
         NetworkProxyContract.methods
           .getUserComplianceData(roundIndex, user)
@@ -23,7 +31,7 @@ const findAllIncorrectResultNodes = async ({
 
       const acceptedAnswer = parseInt(userComplianceData) >= 0
 
-      if (givenAnswer !== acceptedAnswer) {
+      if (hasRevealed && givenAnswer !== acceptedAnswer) {
         incorrectResultNodes.push({ toSlash: node, user })
         break
       }

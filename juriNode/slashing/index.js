@@ -32,6 +32,7 @@ const slashDishonestNodes = async ({
       allNodes,
       allUsers,
       NetworkProxyContract,
+      nodeIndex,
       roundIndex,
     }),
     findAllOfflineNodes({
@@ -42,9 +43,10 @@ const slashDishonestNodes = async ({
     }),
     findAllIncorrectResultNodes({
       allNodes,
+      allUsers,
       bondingAddress,
-      dissentedUsers,
       NetworkProxyContract,
+      nodeIndex,
       roundIndex,
     }),
     findAllIncorrectDissentNodes({
