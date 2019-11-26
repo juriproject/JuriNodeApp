@@ -4,8 +4,8 @@ const parseRevertMessage = require('../helpers/parseRevertMessage')
 const sendTx = require('../helpers/sendTx')
 
 const retrieveRewards = async ({
-  JuriTokenContract,
-  juriTokenAddress,
+  JuriTokenContract, // eslint-disable-line no-unused-vars
+  juriTokenAddress, // eslint-disable-line no-unused-vars
   myJuriNodeAddress,
   myJuriNodePrivateKey,
   NetworkProxyContract,
@@ -23,12 +23,14 @@ const retrieveRewards = async ({
 
   parentPort.postMessage({
     roundIndex: roundIndex.toString(),
-    totalJuriFeesInProxyBefore: (await NetworkProxyContract.methods
-      .totalJuriFees(roundIndex)
-      .call()).toString(),
-    totalJuriFeesAtWithdrawalTimesBefore: (await NetworkProxyContract.methods
-      .totalJuriFeesAtWithdrawalTimes(roundIndex, myJuriNodeAddress)
-      .call()).toString(),
+    totalJuriFeesInProxyBefore: (
+      await NetworkProxyContract.methods.totalJuriFees(roundIndex).call()
+    ).toString(),
+    totalJuriFeesAtWithdrawalTimesBefore: (
+      await NetworkProxyContract.methods
+        .totalJuriFeesAtWithdrawalTimes(roundIndex, myJuriNodeAddress)
+        .call()
+    ).toString(),
   })
 
   try {
@@ -49,12 +51,14 @@ const retrieveRewards = async ({
 
   parentPort.postMessage({
     roundIndex: roundIndex.toString(),
-    totalJuriFeesInProxyAfter: (await NetworkProxyContract.methods
-      .totalJuriFees(roundIndex)
-      .call()).toString(),
-    totalJuriFeesAtWithdrawalTimesAfter: (await NetworkProxyContract.methods
-      .totalJuriFeesAtWithdrawalTimes(roundIndex, myJuriNodeAddress)
-      .call()).toString(),
+    totalJuriFeesInProxyAfter: (
+      await NetworkProxyContract.methods.totalJuriFees(roundIndex).call()
+    ).toString(),
+    totalJuriFeesAtWithdrawalTimesAfter: (
+      await NetworkProxyContract.methods
+        .totalJuriFeesAtWithdrawalTimes(roundIndex, myJuriNodeAddress)
+        .call()
+    ).toString(),
   })
 }
 

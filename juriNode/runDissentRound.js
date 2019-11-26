@@ -25,17 +25,19 @@ const runDissentRound = async ({
       `Sending dissent commitments... (node ${nodeIndex})`,
       parentPort
     )
-    randomNumbers = (await sendCommitments({
-      users: dissentedUsers,
-      isDissent: true,
-      myJuriNodeAddress,
-      myJuriNodePrivateKey,
-      NetworkProxyContract,
-      nodeIndex,
-      parentPort,
-      wasCompliantData,
-      web3,
-    })).randomNumbers
+    randomNumbers = (
+      await sendCommitments({
+        users: dissentedUsers,
+        isDissent: true,
+        myJuriNodeAddress,
+        myJuriNodePrivateKey,
+        NetworkProxyContract,
+        nodeIndex,
+        parentPort,
+        wasCompliantData,
+        web3,
+      })
+    ).randomNumbers
     overwriteLogEnd(`Sent dissent commitments (node ${nodeIndex})!`, parentPort)
   }
 
@@ -51,11 +53,6 @@ const runDissentRound = async ({
 
   // STAGE 5.2
   if (isSendingResults) {
-    parentPort.postMessage({
-      nodeIndex,
-      dissentWasCompliantData: wasCompliantData,
-    })
-
     overwriteLog(`Sending dissent reveals... (node ${nodeIndex})`, parentPort)
     await sendReveals({
       users: dissentedUsers,

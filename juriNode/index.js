@@ -233,9 +233,11 @@ const runRound = async ({
   for (let i = 0; i < uniqUsers.length; i++) {
     resultsBefore.push({
       user: uniqUsers[i],
-      complianceData: (await NetworkProxyContract.methods
-        .getUserComplianceData(roundIndex, uniqUsers[i])
-        .call({ from: bondingAddress })).toString(),
+      complianceData: (
+        await NetworkProxyContract.methods
+          .getUserComplianceData(roundIndex, uniqUsers[i])
+          .call({ from: bondingAddress })
+      ).toString(),
     })
   }
 
@@ -260,13 +262,15 @@ const runRound = async ({
         .getUserComplianceDataCommitment(roundIndex, myJuriNodeAddress, user)
         .call()) === ZERO_ADDRESS
   )
-  const dissentWasCompliantData = (await verifyHeartRateData({
-    users: dissentedUsers,
-    isDownloadingFiles,
-    NetworkProxyContract,
-    parentPort,
-    roundIndex,
-  })).map(({ wasCompliant }) => wasCompliant)
+  const dissentWasCompliantData = (
+    await verifyHeartRateData({
+      users: dissentedUsers,
+      isDownloadingFiles,
+      NetworkProxyContract,
+      parentPort,
+      roundIndex,
+    })
+  ).map(({ wasCompliant }) => wasCompliant)
 
   /* parentPort.postMessage({
     allDissentedUsersLength: allDissentedUsers.length,
@@ -294,9 +298,11 @@ const runRound = async ({
   for (let i = 0; i < uniqUsers.length; i++) {
     resultsAfter.push({
       user: uniqUsers[i],
-      complianceData: (await NetworkProxyContract.methods
-        .getUserComplianceData(roundIndex, uniqUsers[i])
-        .call({ from: bondingAddress })).toString(),
+      complianceData: (
+        await NetworkProxyContract.methods
+          .getUserComplianceData(roundIndex, uniqUsers[i])
+          .call({ from: bondingAddress })
+      ).toString(),
     })
   }
 
@@ -349,12 +355,12 @@ const runRound = async ({
   })
 
   // FINISH UP
-  const balanceJuriTokenBefore = (await JuriTokenContract.methods
-    .balanceOf(myJuriNodeAddress)
-    .call()).toString()
-  const balanceJuriFeesTokenBefore = (await JuriFeesTokenContract.methods
-    .balanceOf(myJuriNodeAddress)
-    .call()).toString()
+  const balanceJuriTokenBefore = (
+    await JuriTokenContract.methods.balanceOf(myJuriNodeAddress).call()
+  ).toString()
+  const balanceJuriFeesTokenBefore = (
+    await JuriFeesTokenContract.methods.balanceOf(myJuriNodeAddress).call()
+  ).toString()
 
   await retrieveRewards({
     JuriTokenContract,
@@ -367,12 +373,12 @@ const runRound = async ({
     web3,
   })
 
-  const balanceJuriTokenAfter = (await JuriTokenContract.methods
-    .balanceOf(myJuriNodeAddress)
-    .call()).toString()
-  const balanceJuriFeesTokenAfter = (await JuriFeesTokenContract.methods
-    .balanceOf(myJuriNodeAddress)
-    .call()).toString()
+  const balanceJuriTokenAfter = (
+    await JuriTokenContract.methods.balanceOf(myJuriNodeAddress).call()
+  ).toString()
+  const balanceJuriFeesTokenAfter = (
+    await JuriFeesTokenContract.methods.balanceOf(myJuriNodeAddress).call()
+  ).toString()
 
   parentPort.postMessage({
     balanceJuriTokenBefore,

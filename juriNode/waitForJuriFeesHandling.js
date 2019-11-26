@@ -13,15 +13,15 @@ const waitForJuriFeesHandling = async ({
     parentPort
   )
 
-  let totalJuriFeesInProxy = (await NetworkProxyContract.methods
-    .totalJuriFees(roundIndex)
-    .call()).toString()
+  let totalJuriFeesInProxy = (
+    await NetworkProxyContract.methods.totalJuriFees(roundIndex).call()
+  ).toString()
 
   while (totalJuriFeesInProxy === '0') {
     await sleep(2000)
-    totalJuriFeesInProxy = (await NetworkProxyContract.methods
-      .totalJuriFees(roundIndex)
-      .call()).toString()
+    totalJuriFeesInProxy = (
+      await NetworkProxyContract.methods.totalJuriFees(roundIndex).call()
+    ).toString()
   }
 
   await sleep(2000)

@@ -102,18 +102,20 @@ const runControllerRound = async ({
 
   parentPort.postMessage({
     roundIndex: roundIndex.toString(),
-    totalJuriFeesInProxyBefore: (await NetworkProxyContract.methods
-      .totalJuriFees(roundIndex)
-      .call()).toString(),
+    totalJuriFeesInProxyBefore: (
+      await NetworkProxyContract.methods.totalJuriFees(roundIndex).call()
+    ).toString(),
   })
 
   for (let i = 0; i < JuriStakingPoolContracts.length; i++) {
     const JuriStakingPoolContract = JuriStakingPoolContracts[i]
 
     parentPort.postMessage({
-      balanceBeforeMint: (await JuriTokenFeesContract.methods
-        .balanceOf(JuriStakingPoolContract._address)
-        .call()).toString(),
+      balanceBeforeMint: (
+        await JuriTokenFeesContract.methods
+          .balanceOf(JuriStakingPoolContract._address)
+          .call()
+      ).toString(),
     })
 
     await sendTx({
@@ -127,9 +129,11 @@ const runControllerRound = async ({
     })
 
     parentPort.postMessage({
-      balanceAfterMint: (await JuriTokenFeesContract.methods
-        .balanceOf(JuriStakingPoolContract._address)
-        .call()).toString(),
+      balanceAfterMint: (
+        await JuriTokenFeesContract.methods
+          .balanceOf(JuriStakingPoolContract._address)
+          .call()
+      ).toString(),
     })
 
     overwriteLog(`Handle JuriFees in pool ${i}...`, parentPort)
@@ -144,12 +148,16 @@ const runControllerRound = async ({
     })
 
     parentPort.postMessage({
-      balanceAfterHandling: (await JuriTokenFeesContract.methods
-        .balanceOf(JuriStakingPoolContract._address)
-        .call()).toString(),
-      balanceAfterHandlingProxy: (await JuriTokenFeesContract.methods
-        .balanceOf(NetworkProxyContract._address)
-        .call()).toString(),
+      balanceAfterHandling: (
+        await JuriTokenFeesContract.methods
+          .balanceOf(JuriStakingPoolContract._address)
+          .call()
+      ).toString(),
+      balanceAfterHandlingProxy: (
+        await JuriTokenFeesContract.methods
+          .balanceOf(NetworkProxyContract._address)
+          .call()
+      ).toString(),
     })
 
     overwriteLogEnd(`Handled JuriFees in pool ${i}!`, parentPort)
@@ -157,9 +165,9 @@ const runControllerRound = async ({
 
   parentPort.postMessage({
     roundIndex: roundIndex.toString(),
-    totalJuriFeesInProxyAfter: (await NetworkProxyContract.methods
-      .totalJuriFees(roundIndex)
-      .call()).toString(),
+    totalJuriFeesInProxyAfter: (
+      await NetworkProxyContract.methods.totalJuriFees(roundIndex).call()
+    ).toString(),
   })
 }
 
