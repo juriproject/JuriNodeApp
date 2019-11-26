@@ -141,7 +141,9 @@ const exec = async () => {
     runRemoteCommand({
       outputWriteStream: outputWriteStreams[0],
       host: hosts.CONTROLLER_NODE,
-      command: `node JuriNodeApp/scripts/runControllerNode.js --controller-address ${controllerAddress} --controller-key ${controllerKey} --time-per-stage ${timePerStage} --user-count ${userCount} --max-rounds ${maxRounds} --is-uploading-files --is-running-on-aws`,
+      command: `node JuriNodeApp/scripts/runControllerNode.js --controller-address ${controllerAddress} --controller-key ${controllerKey} --time-per-stage ${timePerStage} --user-count ${userCount} --max-rounds ${maxRounds} ${
+        isUploadingFiles ? '--is-uploading-files' : ''
+      } --is-running-on-aws`,
     })
   else
     runControllerRoundsService({
