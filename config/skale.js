@@ -43,8 +43,12 @@ const getWeb3Provider = ({ isMain, isRunningOnAws }) => {
 }
 
 const getWeb3 = ({ isMain, isRunningOnAws }) => {
-  const Web3 = require('web3')
-  return new Web3(getWeb3Provider({ isMain, isRunningOnAws }))
+  const Web3 = require('web3') // must be inside function (https://github.com/ethereum/web3.js/issues/2723#issuecomment-486524713)
+
+  const web3 = new Web3(getWeb3Provider({ isMain, isRunningOnAws }))
+  web3.eth.handleRevert = true
+
+  return web3
 }
 
 // const privateTestnetJson = require('../contracts/skale/private_skale_testnet_proxy.json')

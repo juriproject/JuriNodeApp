@@ -30,6 +30,6 @@
     "ethereumjs-tx": "^2.1.1",
     "juriproject-skale-filestorage": "0.0.1",
     "ssh2": "^0.8.6",
-    "web3": "^1.2.4"
+    "web3": "^1.2.5"
   }
 }
