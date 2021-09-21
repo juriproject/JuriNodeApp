@@ -29,7 +29,7 @@
   "dependencies": {
     "ethereumjs-tx": "^2.1.1",
     "juriproject-skale-filestorage": "0.0.1",
-    "ssh2": "^0.8.6",
+    "ssh2": "^1.4.0",
     "web3": "^1.2.5"
   }
 }
